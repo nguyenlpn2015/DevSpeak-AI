@@ -11,6 +11,7 @@ resource "google_sql_database_instance" "default" {
 
   settings {
     tier              = "db-f1-micro"
+    edition           = "ENTERPRISE"
     disk_size         = 10
     disk_type         = "PD_SSD"
     disk_autoresize   = false

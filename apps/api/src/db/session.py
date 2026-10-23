@@ -32,14 +32,22 @@ def get_engine() -> AsyncEngine:
         settings = get_settings()
         db_url = normalize_database_url(settings.DATABASE_URL)
         connect_args: dict[str, Any] = {}
+        engine_kwargs: dict[str, Any] = {
+            "echo": settings.DATABASE_ECHO,
+            "future": True,
+        }
         if "sqlite" in db_url:
             connect_args["check_same_thread"] = False
+        else:
+            # Control connection pool for shared micro-tier Cloud SQL instance (db-f1-micro)
+            engine_kwargs["pool_size"] = 3
+            engine_kwargs["max_overflow"] = 2
+            engine_kwargs["pool_recycle"] = 1800
 
         _engine = create_async_engine(
             db_url,
-            echo=settings.DATABASE_ECHO,
             connect_args=connect_args,
-            future=True,
+            **engine_kwargs,
         )
     return _engine
 

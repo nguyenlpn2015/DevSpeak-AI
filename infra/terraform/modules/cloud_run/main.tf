@@ -1,9 +1,10 @@
 # 1. Cloud Run: devspeak-api (Backend)
 resource "google_cloud_run_v2_service" "api" {
-  project  = var.project_id
-  name     = "devspeak-api-${var.environment}"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  project             = var.project_id
+  name                = "devspeak-api-${var.environment}"
+  location            = var.region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
 
   template {
     service_account = var.api_sa_email
@@ -42,7 +43,12 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "ENVIRONMENT"
-        value = var.environment
+        value = var.environment == "staging" ? "production" : var.environment
+      }
+
+      env {
+        name  = "AUTO_MIGRATE"
+        value = "false"
       }
 
       env {
@@ -67,6 +73,16 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name = "DATABASE_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = var.db_password_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "PGPASSWORD"
         value_source {
           secret_key_ref {
             secret  = var.db_password_secret_id
@@ -106,10 +122,11 @@ resource "google_cloud_run_v2_service_iam_member" "public_api" {
 
 # 2. Cloud Run: devspeak-web (Frontend)
 resource "google_cloud_run_v2_service" "web" {
-  project  = var.project_id
-  name     = "devspeak-web-${var.environment}"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  project             = var.project_id
+  name                = "devspeak-web-${var.environment}"
+  location            = var.region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
 
   template {
     service_account = var.web_sa_email
