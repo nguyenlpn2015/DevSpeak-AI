@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    ENVIRONMENT: Literal["development", "test", "production"] = "development"
+    ENVIRONMENT: Literal["development", "test", "staging", "production"] = "development"
     DEBUG: bool = True
     PROJECT_NAME: str = "DevSpeak AI API"
     API_V1_STR: str = "/api/v1"
@@ -87,6 +87,7 @@ class Settings(BaseSettings):
         "http://localhost:3001",
         "http://127.0.0.1:3001",
     ]
+    CORS_ORIGIN_REGEX: str | None = r"^https:\/\/.*\.run\.app$"
 
     # Quota and security boundaries
     DAILY_QUESTION_QUOTA: int = 20

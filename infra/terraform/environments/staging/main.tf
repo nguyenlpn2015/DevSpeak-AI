@@ -42,6 +42,8 @@ module "cloud_run" {
   environment               = "staging"
   api_sa_email              = module.service_accounts.api_sa_email
   web_sa_email              = module.service_accounts.web_sa_email
+  api_image                 = "${data.terraform_remote_state.shared.outputs.artifact_registry_url}/devspeak-api:baseline"
+  web_image                 = "${data.terraform_remote_state.shared.outputs.artifact_registry_url}/devspeak-web:baseline"
   cloud_sql_connection_name = data.terraform_remote_state.shared.outputs.cloud_sql_connection_name
   db_user                   = module.cloud_sql_database.database_user
   db_name                   = module.cloud_sql_database.database_name
