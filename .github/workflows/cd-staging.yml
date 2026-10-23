@@ -74,7 +74,7 @@ jobs:
 
       - name: Dependency Vulnerability Audit (pip-audit)
         working-directory: apps/api
-        run: python -m pip-audit -r requirements.txt
+        run: python -m pip-audit
 
       - name: Test Alembic Migrations (SQLite Test)
         working-directory: apps/api
