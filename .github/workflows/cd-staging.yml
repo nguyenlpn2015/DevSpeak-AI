@@ -239,19 +239,17 @@ jobs:
             echo "[DevSpeak CD] Updating existing migration job to image ${IMAGE}..."
             gcloud run jobs update "${JOB_NAME}" \
               --image "${IMAGE}" \
-              --region "${REGION}" \
-              --quiet
+              --region "${REGION}"
           else
             echo "[DevSpeak CD] Initializing migration job on-the-fly..."
             gcloud run jobs create "${JOB_NAME}" \
               --image "${IMAGE}" \
               --region "${REGION}" \
-              --service-account devspeak-api-staging-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com \
-              --set-cloudsql-instances ${{ env.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:devspeak-db-ef9683a6 \
-              --set-env-vars ENVIRONMENT=staging,AI_PROVIDER=mock,DATABASE_URL="postgresql+asyncpg://devspeak_staging_user@/devspeak_staging?host=/cloudsql/${{ env.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:devspeak-db-ef9683a6" \
-              --set-secrets PGPASSWORD=devspeak-db-password-staging:latest,DATABASE_PASSWORD=devspeak-db-password-staging:latest \
-              --command python --args "-m,alembic,upgrade,head" \
-              --quiet
+              --service-account "devspeak-api-staging-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+              --set-cloudsql-instances "${{ env.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:devspeak-db-ef9683a6" \
+              --set-env-vars "^|^ENVIRONMENT=staging|AI_PROVIDER=mock|DATABASE_URL=postgresql+asyncpg://devspeak_staging_user@/devspeak_staging?host=/cloudsql/${{ env.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:devspeak-db-ef9683a6" \
+              --set-secrets "^|^PGPASSWORD=devspeak-db-password-staging:latest|DATABASE_PASSWORD=devspeak-db-password-staging:latest" \
+              --args "python,-m,alembic,upgrade,head"
           fi
 
           echo "[DevSpeak CD] Executing database migration and awaiting completion..."
