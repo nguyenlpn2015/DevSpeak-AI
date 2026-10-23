@@ -43,7 +43,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "ENVIRONMENT"
-        value = var.environment == "staging" ? "production" : var.environment
+        value = var.environment
       }
 
       env {
@@ -186,4 +186,86 @@ resource "google_cloud_run_v2_service_iam_member" "public_web" {
   name     = google_cloud_run_v2_service.web.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# 3. Cloud Run Job: Database Migrations (Decoupled Pre-Deploy Migration Gate)
+resource "google_cloud_run_v2_job" "migration" {
+  project             = var.project_id
+  name                = "devspeak-migration-${var.environment}"
+  location            = var.region
+  deletion_protection = false
+
+  template {
+    template {
+      service_account = var.api_sa_email
+      max_retries     = 1
+      timeout         = "300s"
+
+      volumes {
+        name = "cloudsql"
+        cloud_sql_instance {
+          instances = [var.cloud_sql_connection_name]
+        }
+      }
+
+      containers {
+        image   = var.api_image
+        command = ["python", "-m", "alembic", "upgrade", "head"]
+
+        resources {
+          limits = {
+            cpu    = "1"
+            memory = "512Mi"
+          }
+        }
+
+        volume_mounts {
+          name       = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+
+        env {
+          name  = "ENVIRONMENT"
+          value = var.environment
+        }
+
+        env {
+          name  = "AI_PROVIDER"
+          value = "mock"
+        }
+
+        env {
+          name  = "DATABASE_URL"
+          value = "postgresql+asyncpg://${var.db_user}@/${var.db_name}?host=/cloudsql/${var.cloud_sql_connection_name}"
+        }
+
+        env {
+          name = "DATABASE_PASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = var.db_password_secret_id
+              version = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "PGPASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = var.db_password_secret_id
+              version = "latest"
+            }
+          }
+        }
+      }
+    }
+  }
+
+  labels = {
+    app         = "devspeak-ai"
+    service     = "migration"
+    environment = var.environment
+    managed_by  = "terraform"
+  }
 }
