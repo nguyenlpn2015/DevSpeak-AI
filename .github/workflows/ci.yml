@@ -72,7 +72,7 @@ jobs:
         run: python -m bandit -r src
 
       - name: Dependency Vulnerability Audit (pip-audit)
-        run: python -m pip-audit
+        run: python -m pip-audit -r requirements.txt
 
       - name: Verify Alembic Database Migrations
         run: |
