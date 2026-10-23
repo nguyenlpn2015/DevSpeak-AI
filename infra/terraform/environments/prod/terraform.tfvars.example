@@ -1,0 +1,5 @@
+project_id         = "project-12679df0-893b-4260-924"
+region             = "asia-southeast1"
+github_repo        = "nguyenlpn2015/DevSpeak-AI"
+notification_email = "nguyenlpn2015@gmail.com"
+gemini_api_key     = "" # Optional; leave empty to use Mock AI Provider
