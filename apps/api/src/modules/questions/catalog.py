@@ -214,7 +214,6 @@ DEVOPS_QUESTIONS: list[Question] = [
             "What advantages does eBPF in Cilium provide over traditional iptables-based CNI implementations?",
         ],
     ),
-
     # =========================================================================
     # 2. CI/CD & CONTINUOUS DELIVERY
     # =========================================================================
@@ -411,7 +410,6 @@ DEVOPS_QUESTIONS: list[Question] = [
             "How does BuildKit's multi-stage target execution avoid building unnecessary stages?",
         ],
     ),
-
     # =========================================================================
     # 3. LINUX SRE & PERFORMANCE TRIAGE
     # =========================================================================
@@ -609,7 +607,6 @@ DEVOPS_QUESTIONS: list[Question] = [
             "What is the difference between TCP Keepalive and HTTP-level keep-alive?",
         ],
     ),
-
     # =========================================================================
     # 4. AWS & CLOUD ARCHITECTURE
     # =========================================================================
@@ -810,7 +807,6 @@ DEVOPS_QUESTIONS: list[Question] = [
             "How do S3 Lifecycle Policies help balance storage cost with data retention requirements?",
         ],
     ),
-
     # =========================================================================
     # 5. DOCKER & CONTAINERIZATION
     # =========================================================================
@@ -956,7 +952,7 @@ DEVOPS_QUESTIONS: list[Question] = [
             "If the application (like Node.js or Python) does not explicitly register a SIGTERM listener, the signal is ignored. "
             "Docker waits 10 seconds for graceful shutdown before issuing an uncatchable SIGKILL. "
             "Furthermore, if CMD uses shell syntax ('CMD node app.js'), '/bin/sh' becomes PID 1 and fails to forward signals to the node child. "
-            "To fix this, first, use exec form: 'CMD [\"node\", \"app.js\"]'. "
+            'To fix this, first, use exec form: \'CMD ["node", "app.js"]\'. '
             "Second, use a lightweight init process like 'tini' or 'dumb-init' as ENTRYPOINT, or run Docker with the '--init' flag. "
             "The init system properly forwards SIGTERM and reaps orphaned child processes."
         ),
@@ -965,7 +961,6 @@ DEVOPS_QUESTIONS: list[Question] = [
             "What happens to database connections when a container receives SIGKILL instead of handling SIGTERM gracefully?",
         ],
     ),
-
     # =========================================================================
     # 6. SYSTEM DESIGN & HIGH AVAILABILITY
     # =========================================================================
@@ -1117,7 +1112,6 @@ DEVOPS_QUESTIONS: list[Question] = [
             "What is connection pooling (e.g., PgBouncer), and why is it critical when scaling multiple read replicas?",
         ],
     ),
-
     # =========================================================================
     # 7. BEHAVIORAL INTERVIEWS (STAR METHOD)
     # =========================================================================

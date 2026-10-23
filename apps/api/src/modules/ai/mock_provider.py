@@ -296,19 +296,13 @@ class DeterministicMockAIProvider(AIProviderInterface):
 
         # Turn 3 or beyond: Conclude interview with structured evaluation
         all_candidate_texts = [
-            m.get("content", "")
-            for m in conversation_history
-            if m.get("role") == "candidate"
+            m.get("content", "") for m in conversation_history if m.get("role") == "candidate"
         ]
         all_candidate_texts.append(candidate_message)
         combined_text = " ".join(all_candidate_texts)
 
         feedback_report = await self.evaluate_answer(question, combined_text)
-        role_title = (
-            question.role.value
-            if hasattr(question.role, "value")
-            else str(question.role)
-        )
+        role_title = question.role.value if hasattr(question.role, "value") else str(question.role)
         reply = (
             f"Thank you for walking me through that technical problem from start to finish. "
             f"You demonstrated good analytical structure and domain knowledge relevant for this {role_title} role. "

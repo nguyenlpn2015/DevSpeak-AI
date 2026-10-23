@@ -14,9 +14,7 @@ async def test_get_session_messages_seeds_prompt(async_client: AsyncClient) -> N
     assert sess_res.status_code == 201
     session_id = sess_res.json()["id"]
 
-    msg_res = await async_client.get(
-        f"/api/v1/interviews/sessions/{session_id}/messages"
-    )
+    msg_res = await async_client.get(f"/api/v1/interviews/sessions/{session_id}/messages")
     assert msg_res.status_code == 200
     messages = msg_res.json()
     assert len(messages) == 1

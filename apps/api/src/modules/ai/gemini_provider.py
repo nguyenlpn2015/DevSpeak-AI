@@ -341,9 +341,7 @@ class GeminiAIProvider(AIProviderInterface):
         """Conduct an interactive interview turn using Gemini API."""
         if turn_count >= 3:
             all_candidate_texts = [
-                m.get("content", "")
-                for m in conversation_history
-                if m.get("role") == "candidate"
+                m.get("content", "") for m in conversation_history if m.get("role") == "candidate"
             ]
             all_candidate_texts.append(candidate_message)
             combined_text = " ".join(all_candidate_texts)

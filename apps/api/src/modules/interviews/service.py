@@ -383,9 +383,7 @@ class InterviewService:
         # 5. If concluding, mark session completed and persist attempt
         if is_concluding and feedback_report:
             session.status = "completed"
-            all_candidate_answers = [
-                m.content for m in existing_messages if m.role == "candidate"
-            ]
+            all_candidate_answers = [m.content for m in existing_messages if m.role == "candidate"]
             all_candidate_answers.append(payload.message)
             combined_user_answer = "\n\n---\n\n".join(all_candidate_answers)
 
