@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -51,7 +51,7 @@ jobs:
 
       # --- Backend Checks ---
       - name: Set up Python 3.12
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
@@ -94,7 +94,7 @@ jobs:
 
       # --- Frontend Checks ---
       - name: Set up Node.js 24
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: "npm"
@@ -132,13 +132,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Backend Container Locally
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: apps/api
           file: apps/api/Dockerfile
@@ -146,7 +146,7 @@ jobs:
           tags: devspeak-api:test
 
       - name: Build Frontend Container Locally
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: apps/web
           file: apps/web/Dockerfile
@@ -186,28 +186,28 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud via Workload Identity Federation
         id: auth
-        uses: google-github-actions/auth@71fee0130f2c646d2749439748574731888e686a # v2.1.8
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
           token_format: access_token
 
       - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@618f082236ca9172a11b643a6d97b10c59800db7 # v2.1.4
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Authorize Docker for Artifact Registry
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Build & Push Backend API Image
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: apps/api
           file: apps/api/Dockerfile
@@ -217,7 +217,7 @@ jobs:
             ${{ env.ARTIFACT_REGISTRY }}/devspeak-api:staging
 
       - name: Build & Push Frontend Web Image
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: apps/web
           file: apps/web/Dockerfile
