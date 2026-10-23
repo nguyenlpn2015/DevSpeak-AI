@@ -2,7 +2,7 @@
 resource "google_monitoring_notification_channel" "email" {
   count        = var.notification_email != "" ? 1 : 0
   project      = var.project_id
-  display_name = "DevSpeak SRE Alerts (${var.notification_email})"
+  display_name = "DevSpeak [${var.environment}] SRE Alerts (${var.notification_email})"
   type         = "email"
 
   labels = {
@@ -13,7 +13,7 @@ resource "google_monitoring_notification_channel" "email" {
 # Alert Policy: Cloud Run High 5xx Server Error Rate
 resource "google_monitoring_alert_policy" "cloud_run_errors" {
   project      = var.project_id
-  display_name = "DevSpeak - Cloud Run High 5xx Error Rate"
+  display_name = "DevSpeak [${var.environment}] - Cloud Run High 5xx Error Rate"
   combiner     = "OR"
 
   conditions {
@@ -35,7 +35,8 @@ resource "google_monitoring_alert_policy" "cloud_run_errors" {
   notification_channels = var.notification_email != "" ? [google_monitoring_notification_channel.email[0].name] : []
 
   user_labels = {
-    severity = "warning"
-    app      = "devspeak-ai"
+    severity    = "warning"
+    app         = "devspeak-ai"
+    environment = var.environment
   }
 }

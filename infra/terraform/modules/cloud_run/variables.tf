@@ -9,6 +9,11 @@ variable "region" {
   default     = "asia-southeast1"
 }
 
+variable "environment" {
+  description = "The deployment environment (staging or prod)"
+  type        = string
+}
+
 variable "api_sa_email" {
   description = "Runtime service account for devspeak-api"
   type        = string

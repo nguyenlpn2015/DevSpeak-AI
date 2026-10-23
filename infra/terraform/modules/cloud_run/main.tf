@@ -1,7 +1,7 @@
 # 1. Cloud Run: devspeak-api (Backend)
 resource "google_cloud_run_v2_service" "api" {
   project  = var.project_id
-  name     = "devspeak-api"
+  name     = "devspeak-api-${var.environment}"
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
@@ -9,8 +9,8 @@ resource "google_cloud_run_v2_service" "api" {
     service_account = var.api_sa_email
 
     scaling {
-      min_instance_count = 0 # Scale-to-zero compute (Zero Idle Cost)
-      max_instance_count = 3 # Hard limit to prevent Denial of Wallet
+      min_instance_count = 0                                 # Scale-to-zero compute (Zero Idle Cost)
+      max_instance_count = var.environment == "prod" ? 3 : 2 # Cost control cap
     }
 
     volumes {
@@ -42,7 +42,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "ENVIRONMENT"
-        value = "production"
+        value = var.environment
       }
 
       env {
@@ -90,7 +90,7 @@ resource "google_cloud_run_v2_service" "api" {
   labels = {
     app         = "devspeak-ai"
     service     = "api"
-    environment = "prod"
+    environment = var.environment
     managed_by  = "terraform"
   }
 }
@@ -107,7 +107,7 @@ resource "google_cloud_run_v2_service_iam_member" "public_api" {
 # 2. Cloud Run: devspeak-web (Frontend)
 resource "google_cloud_run_v2_service" "web" {
   project  = var.project_id
-  name     = "devspeak-web"
+  name     = "devspeak-web-${var.environment}"
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
@@ -115,8 +115,8 @@ resource "google_cloud_run_v2_service" "web" {
     service_account = var.web_sa_email
 
     scaling {
-      min_instance_count = 0 # Scale-to-zero compute (Zero Idle Cost)
-      max_instance_count = 2 # Cost control cap
+      min_instance_count = 0                                 # Scale-to-zero compute (Zero Idle Cost)
+      max_instance_count = var.environment == "prod" ? 2 : 1 # Cost control cap
     }
 
     containers {
@@ -155,7 +155,7 @@ resource "google_cloud_run_v2_service" "web" {
   labels = {
     app         = "devspeak-ai"
     service     = "web"
-    environment = "prod"
+    environment = var.environment
     managed_by  = "terraform"
   }
 

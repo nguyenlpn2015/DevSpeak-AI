@@ -1,53 +1,59 @@
-# Module 1: Artifact Registry for Docker Containers
-module "artifact_registry" {
-  source     = "../../modules/artifact_registry"
-  project_id = var.project_id
-  region     = var.region
+# Read shared infrastructure outputs (Artifact Registry, WIF, Cloud SQL Instance)
+data "terraform_remote_state" "shared" {
+  backend = "gcs"
+  config = {
+    bucket = "devspeak-tf-state-359194986638"
+    prefix = "terraform/state/shared"
+  }
 }
 
-# Module 2: IAM Service Accounts & Workload Identity Federation
+# 1. Production Runtime Service Accounts
 module "service_accounts" {
-  source      = "../../modules/service_accounts"
-  project_id  = var.project_id
-  github_repo = var.github_repo
+  source               = "../../modules/service_accounts"
+  project_id           = var.project_id
+  environment          = "prod"
+  ci_deployer_sa_email = data.terraform_remote_state.shared.outputs.ci_deployer_sa_email
 }
 
-# Module 3: Secret Manager
+# 2. Production Secret Manager
 module "secret_manager" {
   source         = "../../modules/secret_manager"
   project_id     = var.project_id
+  environment    = "prod"
   api_sa_email   = module.service_accounts.api_sa_email
   gemini_api_key = var.gemini_api_key
 }
 
-# Module 4: Cloud SQL for PostgreSQL (db-f1-micro, Single-zone, no HA)
-module "cloud_sql" {
-  source        = "../../modules/cloud_sql"
+# 3. Production Cloud SQL Database on Shared Instance
+module "cloud_sql_database" {
+  source        = "../../modules/cloud_sql_database"
   project_id    = var.project_id
-  region        = var.region
-  database_name = "devspeak"
-  database_user = "devspeak_user"
+  instance_name = data.terraform_remote_state.shared.outputs.cloud_sql_instance_name
+  database_name = "devspeak_prod"
+  database_user = "devspeak_prod_user"
   db_password   = module.secret_manager.db_password_value
 }
 
-# Module 5: Cloud Run (Frontend & Backend, scale-to-zero)
+# 4. Production Cloud Run (Frontend & Backend, scale-to-zero)
 module "cloud_run" {
   source                    = "../../modules/cloud_run"
   project_id                = var.project_id
   region                    = var.region
+  environment               = "prod"
   api_sa_email              = module.service_accounts.api_sa_email
   web_sa_email              = module.service_accounts.web_sa_email
-  cloud_sql_connection_name = module.cloud_sql.instance_connection_name
-  db_user                   = module.cloud_sql.database_user
-  db_name                   = module.cloud_sql.database_name
+  cloud_sql_connection_name = data.terraform_remote_state.shared.outputs.cloud_sql_connection_name
+  db_user                   = module.cloud_sql_database.database_user
+  db_name                   = module.cloud_sql_database.database_name
   db_password_secret_id     = module.secret_manager.db_password_id
   jwt_secret_id             = module.secret_manager.jwt_secret_id
   gemini_api_key_secret_id  = module.secret_manager.gemini_api_key_id
 }
 
-# Module 6: Cloud Monitoring & Alerting
+# 5. Production Cloud Monitoring & Alerting
 module "monitoring" {
   source             = "../../modules/monitoring"
   project_id         = var.project_id
+  environment        = "prod"
   notification_email = var.notification_email
 }

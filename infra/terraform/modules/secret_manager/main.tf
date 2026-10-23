@@ -13,7 +13,7 @@ resource "random_password" "db_password" {
 # Secret: JWT Secret Key
 resource "google_secret_manager_secret" "jwt_secret" {
   project   = var.project_id
-  secret_id = "devspeak-jwt-secret"
+  secret_id = "devspeak-jwt-secret-${var.environment}"
 
   replication {
     auto {}
@@ -21,7 +21,7 @@ resource "google_secret_manager_secret" "jwt_secret" {
 
   labels = {
     app         = "devspeak-ai"
-    environment = "prod"
+    environment = var.environment
     managed_by  = "terraform"
   }
 }
@@ -34,7 +34,7 @@ resource "google_secret_manager_secret_version" "jwt_secret" {
 # Secret: Database Password
 resource "google_secret_manager_secret" "db_password" {
   project   = var.project_id
-  secret_id = "devspeak-db-password"
+  secret_id = "devspeak-db-password-${var.environment}"
 
   replication {
     auto {}
@@ -42,7 +42,7 @@ resource "google_secret_manager_secret" "db_password" {
 
   labels = {
     app         = "devspeak-ai"
-    environment = "prod"
+    environment = var.environment
     managed_by  = "terraform"
   }
 }
@@ -55,7 +55,7 @@ resource "google_secret_manager_secret_version" "db_password" {
 # Secret: Gemini API Key
 resource "google_secret_manager_secret" "gemini_api_key" {
   project   = var.project_id
-  secret_id = "devspeak-gemini-api-key"
+  secret_id = "devspeak-gemini-api-key-${var.environment}"
 
   replication {
     auto {}
@@ -63,7 +63,7 @@ resource "google_secret_manager_secret" "gemini_api_key" {
 
   labels = {
     app         = "devspeak-ai"
-    environment = "prod"
+    environment = var.environment
     managed_by  = "terraform"
   }
 }

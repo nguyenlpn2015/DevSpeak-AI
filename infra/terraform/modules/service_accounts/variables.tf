@@ -3,8 +3,13 @@ variable "project_id" {
   type        = string
 }
 
-variable "github_repo" {
-  description = "The GitHub repository in org/repo format"
+variable "environment" {
+  description = "The target deployment environment (staging or prod)"
   type        = string
-  default     = "nguyenlpn2015/DevSpeak-AI"
+}
+
+variable "ci_deployer_sa_email" {
+  description = "The email of the CI/CD deployer service account to grant impersonation"
+  type        = string
+  default     = ""
 }

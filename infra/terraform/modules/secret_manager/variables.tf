@@ -3,6 +3,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "environment" {
+  description = "The target deployment environment (staging or prod)"
+  type        = string
+}
+
 variable "api_sa_email" {
   description = "Service account email of the backend API"
   type        = string

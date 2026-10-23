@@ -3,22 +3,19 @@ variable "project_id" {
   type        = string
 }
 
-variable "region" {
-  description = "The GCP region for Cloud SQL"
+variable "instance_name" {
+  description = "The Cloud SQL instance name"
   type        = string
-  default     = "asia-southeast1"
 }
 
 variable "database_name" {
   description = "The database name"
   type        = string
-  default     = "devspeak"
 }
 
 variable "database_user" {
   description = "The database application username"
   type        = string
-  default     = "devspeak_user"
 }
 
 variable "db_password" {

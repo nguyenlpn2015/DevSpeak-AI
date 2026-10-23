@@ -27,21 +27,8 @@ resource "google_sql_database_instance" "default" {
 
     user_labels = {
       app         = "devspeak-ai"
-      environment = "prod"
+      environment = "shared"
       managed_by  = "terraform"
     }
   }
-}
-
-resource "google_sql_database" "devspeak" {
-  project  = var.project_id
-  name     = var.database_name
-  instance = google_sql_database_instance.default.name
-}
-
-resource "google_sql_user" "devspeak_user" {
-  project  = var.project_id
-  name     = var.database_user
-  instance = google_sql_database_instance.default.name
-  password = var.db_password
 }
