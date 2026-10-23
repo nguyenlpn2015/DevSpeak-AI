@@ -1,0 +1,13 @@
+{
+  "name": "devspeak-ai-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DevSpeak AI Monorepo Workspace",
+  "scripts": {
+    "dev": "npm run dev --prefix apps/web",
+    "dev:web": "npm run dev --prefix apps/web",
+    "build:web": "npm run build --prefix apps/web",
+    "test:web": "npm run test --prefix apps/web"
+  }
+}
+

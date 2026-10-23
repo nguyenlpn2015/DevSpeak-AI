@@ -1,0 +1,82 @@
+# ==============================================================================
+# DevSpeak AI - Multi-Container Orchestration (Docker Compose)
+# Services:
+#   - db: PostgreSQL 16 Alpine with healthcheck and persistent volume
+#   - api: FastAPI modular monolith (Python 3.12, Alembic auto-migration)
+#   - web: Next.js 15 PWA frontend (Port 3001 mapped to container port 3000)
+# ==============================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: devspeak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-devspeak}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devspeak_local_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-devspeak}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-devspeak} -d ${POSTGRES_DB:-devspeak}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - devspeak-net
+    security_opt:
+      - no-new-privileges:true
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: devspeak-api
+    restart: unless-stopped
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-devspeak}:${POSTGRES_PASSWORD:-devspeak_local_secret}@db:5432/${POSTGRES_DB:-devspeak}
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-lite-latest}
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:3001","http://127.0.0.1:3000","http://127.0.0.1:3001"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - devspeak-net
+    security_opt:
+      - no-new-privileges:true
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: devspeak-web
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      API_INTERNAL_URL: http://api:8000
+    ports:
+      - "3001:3001"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - devspeak-net
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  postgres_data:
+    name: devspeak_postgres_data
+
+networks:
+  devspeak-net:
+    name: devspeak-internal-network
+    driver: bridge
+

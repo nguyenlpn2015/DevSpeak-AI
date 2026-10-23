@@ -1,0 +1,125 @@
+# DevSpeak AI - .gitignore
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env*.example
+*.pem
+*.key
+*.cert
+*.pfx
+*.p12
+secrets/
+credentials.json
+
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+*.stackdump
+
+# Editor & IDE Directories
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+/lib/
+/lib64/
+!**/src/lib/**
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+
+# Database files (SQLite, WAL, dumps)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*-wal
+*-shm
+*.sql.gz
+
+# Node & Frontend artifacts
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Terraform artifacts
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.rc
+terraform.rc
+
+# Container & Kubernetes local files
+*.local.yaml
+*.local.yml
+
+# Logs and scratch data
+logs/
+*.log
+scratch/
+tmp/
+temp/
+
+# Documentation, Study, and Markdown files (Strictly excluded from GitHub as requested)
+docs/
+study/
+*.md
+**/*.md
+
+

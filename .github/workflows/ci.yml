@@ -1,0 +1,128 @@
+name: DevSpeak AI - Continuous Integration & DevSecOps Quality Gates
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Least-privilege permissions: read-only access to repository contents
+permissions:
+  contents: read
+
+# Cancel redundant in-flight workflow runs for the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================
+  # Job 1: Secret Leak Detection (Gitleaks)
+  # ==========================================
+  secret-scan:
+    name: Secret Leak Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code with full Git history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks secret scanner
+        uses: gitleaks/gitleaks-action@e859b9220970ec7469a9e3e7f607421cb81404c0 # v2.3.8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================
+  # Job 2: Backend Quality & DevSecOps Gates
+  # ==========================================
+  backend-quality:
+    name: Backend CI & SAST (Python 3.12)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: apps/api/requirements-dev.txt
+
+      - name: Upgrade pip and install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Python Code Linting (Ruff)
+        run: python -m ruff check .
+
+      - name: Python Formatting Check (Ruff)
+        run: python -m ruff format --check .
+
+      - name: Static Application Security Testing (Bandit SAST)
+        run: python -m bandit -r src
+
+      - name: Dependency Vulnerability Audit (pip-audit)
+        run: python -m pip-audit -r requirements.txt
+
+      - name: Verify Alembic Database Migrations
+        run: |
+          python -m alembic upgrade head
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./ci_test_migration.db"
+          AI_PROVIDER: "mock"
+
+      - name: Execute Automated Test Suite (Pytest - 100% Offline Mock)
+        run: python -m pytest -v
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./ci_test.db"
+          AI_PROVIDER: "mock"
+          ENVIRONMENT: "test"
+
+  # ==========================================
+  # Job 3: Frontend Quality & Build Gates
+  # ==========================================
+  frontend-quality:
+    name: Frontend CI & Production Build (Node.js 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies cleanly (npm ci)
+        run: npm ci
+
+      - name: TypeScript Type Check (tsc)
+        run: npm run type-check
+
+      - name: Frontend Code Linting (ESLint)
+        run: npm run lint
+
+      - name: Unit & Component Tests (Vitest)
+        run: npm test
+
+      - name: Next.js Production Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000"
+
