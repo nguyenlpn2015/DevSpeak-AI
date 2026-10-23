@@ -1,6 +1,6 @@
 # ==============================================================================
 # DevSpeak AI - Backend Multi-Stage Dockerfile (Python 3.12)
-# Security: Multi-stage, non-root user (UID 10001), minimal attack surface
+# Hardened: Multi-stage, Non-Root (UID 10001), Dynamic $PORT, Configurable Migration
 # ==============================================================================
 
 # Stage 1: Build Dependencies
@@ -35,23 +35,21 @@ RUN groupadd -g 10001 appgroup && \
 # Copy installed virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv
 
-# Copy application source code and configuration
-COPY alembic.ini ./
-COPY alembic/ ./alembic/
-COPY src/ ./src/
-COPY entrypoint.sh ./entrypoint.sh
+# Copy application source code and configuration with direct non-root ownership
+COPY --chown=appuser:appgroup alembic.ini ./
+COPY --chown=appuser:appgroup alembic/ ./alembic/
+COPY --chown=appuser:appgroup src/ ./src/
+COPY --chown=appuser:appgroup entrypoint.sh ./entrypoint.sh
 
-# Ensure proper permissions and switch to non-root user
-RUN chmod +x ./entrypoint.sh && \
-    chown -R appuser:appgroup /app
+# Ensure execute permissions on the entrypoint script
+RUN chmod +x ./entrypoint.sh
 
 USER appuser:appgroup
 
 EXPOSE 8000
 
-# Zero-dependency healthcheck via Python stdlib urllib
+# Zero-dependency healthcheck via Python stdlib urllib probing dynamic $PORT
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request, os; urllib.request.urlopen('http://127.0.0.1:' + str(os.environ.get('PORT', 8000)) + '/readyz')" || exit 1
 
 ENTRYPOINT ["./entrypoint.sh"]
-
