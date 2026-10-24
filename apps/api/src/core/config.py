@@ -21,6 +21,22 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "DevSpeak AI API"
     API_V1_STR: str = "/api/v1"
 
+    @field_validator("ENVIRONMENT", mode="before")
+    @classmethod
+    def parse_environment(cls, v: object) -> str:
+        """Normalize environment strings (e.g. prod -> production, dev -> development)."""
+        if isinstance(v, str):
+            clean = v.strip().lower()
+            if clean in ("prod", "production"):
+                return "production"
+            if clean in ("dev", "development"):
+                return "development"
+            if clean in ("stage", "staging"):
+                return "staging"
+            if clean in ("test", "testing"):
+                return "test"
+        return str(v)
+
     @field_validator("DEBUG", mode="before")
     @classmethod
     def parse_debug_value(cls, v: object) -> bool:

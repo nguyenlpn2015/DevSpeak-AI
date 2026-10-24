@@ -43,7 +43,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "ENVIRONMENT"
-        value = var.environment
+        value = var.environment == "prod" ? "production" : var.environment
       }
 
       env {
@@ -226,7 +226,7 @@ resource "google_cloud_run_v2_job" "migration" {
 
         env {
           name  = "ENVIRONMENT"
-          value = var.environment
+          value = var.environment == "prod" ? "production" : var.environment
         }
 
         env {
