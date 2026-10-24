@@ -14,20 +14,20 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: devspeak-api
+                name: devspeak-api-gke
                 port:
                   number: 8000
           - path: /readyz
             pathType: Exact
             backend:
               service:
-                name: devspeak-api
+                name: devspeak-api-gke
                 port:
                   number: 8000
           - path: /*
             pathType: ImplementationSpecific
             backend:
               service:
-                name: devspeak-web
+                name: devspeak-web-gke
                 port:
                   number: 3000
