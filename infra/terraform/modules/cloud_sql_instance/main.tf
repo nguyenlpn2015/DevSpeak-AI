@@ -7,7 +7,7 @@ resource "google_sql_database_instance" "default" {
   name                = "devspeak-db-${random_id.db_suffix.hex}"
   database_version    = "POSTGRES_16"
   region              = var.region
-  deletion_protection = false
+  deletion_protection = true
 
   settings {
     tier              = "db-f1-micro"
@@ -35,3 +35,4 @@ resource "google_sql_database_instance" "default" {
     }
   }
 }
+

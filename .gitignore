@@ -121,5 +121,7 @@ docs/
 study/
 *.md
 **/*.md
+!README.md
+
 
 
