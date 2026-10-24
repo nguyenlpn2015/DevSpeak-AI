@@ -12,3 +12,8 @@ output "database_name" {
   description = "Production database name"
   value       = module.cloud_sql_database.database_name
 }
+
+output "prod_deployer_sa_email" {
+  description = "Dedicated production CI/CD deployer service account email"
+  value       = google_service_account.prod_deployer_sa.email
+}

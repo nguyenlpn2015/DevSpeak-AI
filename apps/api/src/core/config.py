@@ -16,10 +16,26 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    ENVIRONMENT: Literal["development", "test", "production"] = "development"
+    ENVIRONMENT: Literal["development", "test", "staging", "production"] = "development"
     DEBUG: bool = True
     PROJECT_NAME: str = "DevSpeak AI API"
     API_V1_STR: str = "/api/v1"
+
+    @field_validator("ENVIRONMENT", mode="before")
+    @classmethod
+    def parse_environment(cls, v: object) -> str:
+        """Normalize environment strings (e.g. prod -> production, dev -> development)."""
+        if isinstance(v, str):
+            clean = v.strip().lower()
+            if clean in ("prod", "production"):
+                return "production"
+            if clean in ("dev", "development"):
+                return "development"
+            if clean in ("stage", "staging"):
+                return "staging"
+            if clean in ("test", "testing"):
+                return "test"
+        return str(v)
 
     @field_validator("DEBUG", mode="before")
     @classmethod
@@ -87,6 +103,7 @@ class Settings(BaseSettings):
         "http://localhost:3001",
         "http://127.0.0.1:3001",
     ]
+    CORS_ORIGIN_REGEX: str | None = r"^https:\/\/devspeak-web-[a-z0-9-]+(\.[a-z0-9-]+)*\.run\.app$"
 
     # Quota and security boundaries
     DAILY_QUESTION_QUOTA: int = 20
@@ -99,7 +116,6 @@ class Settings(BaseSettings):
     )
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
-
 
 
 @lru_cache

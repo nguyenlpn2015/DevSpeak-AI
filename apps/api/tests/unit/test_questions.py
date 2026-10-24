@@ -53,7 +53,6 @@ def test_question_filtering_by_topic():
     assert any(q.id == "aws-multiaz-cost-optimization" for q in aws_res.items)
 
 
-
 def test_question_filtering_by_difficulty():
     """Verify question listing filters properly by difficulty."""
     catalog = QuestionCatalog()

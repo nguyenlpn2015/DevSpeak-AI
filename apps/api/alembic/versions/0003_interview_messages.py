@@ -37,18 +37,14 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        "ix_interview_messages_id", "interview_messages", ["id"], unique=False
-    )
+    op.create_index("ix_interview_messages_id", "interview_messages", ["id"], unique=False)
     op.create_index(
         "ix_interview_messages_session_id",
         "interview_messages",
         ["session_id"],
         unique=False,
     )
-    op.create_index(
-        "ix_interview_messages_role", "interview_messages", ["role"], unique=False
-    )
+    op.create_index("ix_interview_messages_role", "interview_messages", ["role"], unique=False)
     op.create_index(
         "ix_interview_messages_turn_index",
         "interview_messages",

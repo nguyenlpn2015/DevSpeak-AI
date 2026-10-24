@@ -1,16 +1,17 @@
 # 1. Cloud Run: devspeak-api (Backend)
 resource "google_cloud_run_v2_service" "api" {
-  project  = var.project_id
-  name     = "devspeak-api-${var.environment}"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  project             = var.project_id
+  name                = "devspeak-api-${var.environment}"
+  location            = var.region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
 
   template {
     service_account = var.api_sa_email
 
     scaling {
       min_instance_count = 0                                 # Scale-to-zero compute (Zero Idle Cost)
-      max_instance_count = var.environment == "prod" ? 3 : 2 # Cost control cap
+      max_instance_count = var.environment == "prod" ? 2 : 1 # Connection cap: Staging=1 (max 5 conn), Prod=2 (max 10 conn) -> Max 15 conn <= 22 net usable on db-f1-micro
     }
 
     volumes {
@@ -42,7 +43,12 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "ENVIRONMENT"
-        value = var.environment
+        value = var.environment == "prod" ? "production" : var.environment
+      }
+
+      env {
+        name  = "AUTO_MIGRATE"
+        value = "false"
       }
 
       env {
@@ -67,6 +73,16 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name = "DATABASE_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = var.db_password_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "PGPASSWORD"
         value_source {
           secret_key_ref {
             secret  = var.db_password_secret_id
@@ -106,10 +122,11 @@ resource "google_cloud_run_v2_service_iam_member" "public_api" {
 
 # 2. Cloud Run: devspeak-web (Frontend)
 resource "google_cloud_run_v2_service" "web" {
-  project  = var.project_id
-  name     = "devspeak-web-${var.environment}"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  project             = var.project_id
+  name                = "devspeak-web-${var.environment}"
+  location            = var.region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
 
   template {
     service_account = var.web_sa_email
@@ -169,4 +186,86 @@ resource "google_cloud_run_v2_service_iam_member" "public_web" {
   name     = google_cloud_run_v2_service.web.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# 3. Cloud Run Job: Database Migrations (Decoupled Pre-Deploy Migration Gate)
+resource "google_cloud_run_v2_job" "migration" {
+  project             = var.project_id
+  name                = "devspeak-migration-${var.environment}"
+  location            = var.region
+  deletion_protection = false
+
+  template {
+    template {
+      service_account = var.api_sa_email
+      max_retries     = 1
+      timeout         = "300s"
+
+      volumes {
+        name = "cloudsql"
+        cloud_sql_instance {
+          instances = [var.cloud_sql_connection_name]
+        }
+      }
+
+      containers {
+        image   = var.api_image
+        command = ["python", "-m", "alembic", "upgrade", "head"]
+
+        resources {
+          limits = {
+            cpu    = "1"
+            memory = "512Mi"
+          }
+        }
+
+        volume_mounts {
+          name       = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+
+        env {
+          name  = "ENVIRONMENT"
+          value = var.environment == "prod" ? "production" : var.environment
+        }
+
+        env {
+          name  = "AI_PROVIDER"
+          value = "mock"
+        }
+
+        env {
+          name  = "DATABASE_URL"
+          value = "postgresql+asyncpg://${var.db_user}@/${var.db_name}?host=/cloudsql/${var.cloud_sql_connection_name}"
+        }
+
+        env {
+          name = "DATABASE_PASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = var.db_password_secret_id
+              version = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "PGPASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = var.db_password_secret_id
+              version = "latest"
+            }
+          }
+        }
+      }
+    }
+  }
+
+  labels = {
+    app         = "devspeak-ai"
+    service     = "migration"
+    environment = var.environment
+    managed_by  = "terraform"
+  }
 }

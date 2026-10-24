@@ -35,9 +35,7 @@ class ProgressService:
         catalog = self._get_catalog()
 
         # Query sessions with attempts eager-loaded
-        sess_stmt = select(InterviewSession).options(
-            selectinload(InterviewSession.attempts)
-        )
+        sess_stmt = select(InterviewSession).options(selectinload(InterviewSession.attempts))
         if user_id:
             sess_stmt = sess_stmt.where(InterviewSession.user_id == user_id)
         else:

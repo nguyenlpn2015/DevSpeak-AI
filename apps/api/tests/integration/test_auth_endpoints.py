@@ -169,9 +169,7 @@ async def test_authenticated_session_isolation(async_client: AsyncClient) -> Non
     sess_b_id = sess_b.json()["id"]
 
     # Candidate A can access own session
-    get_a = await async_client.get(
-        f"/api/v1/interviews/sessions/{sess_a_id}", headers=headers_a
-    )
+    get_a = await async_client.get(f"/api/v1/interviews/sessions/{sess_a_id}", headers=headers_a)
     assert get_a.status_code == 200
 
     # Candidate B cannot access Candidate A's session (403)

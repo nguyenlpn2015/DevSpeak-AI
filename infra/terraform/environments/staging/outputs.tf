@@ -12,3 +12,8 @@ output "database_name" {
   description = "Staging database name"
   value       = module.cloud_sql_database.database_name
 }
+
+output "migration_job_name" {
+  description = "The name of the staging database migration Cloud Run Job"
+  value       = module.cloud_run.migration_job_name
+}

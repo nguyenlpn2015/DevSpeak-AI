@@ -11,14 +11,17 @@ resource "google_sql_database_instance" "default" {
 
   settings {
     tier              = "db-f1-micro"
+    edition           = "ENTERPRISE"
     disk_size         = 10
     disk_type         = "PD_SSD"
     disk_autoresize   = false
     availability_type = "ZONAL" # Single-zone: zero HA multi-zone cost
 
     backup_configuration {
-      enabled    = true
-      start_time = "03:00"
+      enabled                        = true
+      start_time                     = "03:00"
+      point_in_time_recovery_enabled = true
+      transaction_log_retention_days = 7
     }
 
     ip_configuration {

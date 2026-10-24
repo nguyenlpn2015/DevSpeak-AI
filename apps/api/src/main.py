@@ -75,11 +75,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_application() -> FastAPI:
     """Build and configure the FastAPI application instance."""
     settings = get_settings()
+    is_prod = settings.ENVIRONMENT == "production"
 
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version="0.1.0",
         description="DevSpeak AI REST API - AI English Interview Coach for IT Professionals",
+        docs_url=None if is_prod else "/docs",
+        redoc_url=None if is_prod else "/redoc",
+        openapi_url=None if is_prod else "/openapi.json",
         lifespan=lifespan,
     )
 
@@ -87,6 +91,7 @@ def create_application() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
+        allow_origin_regex=settings.CORS_ORIGIN_REGEX,
         allow_credentials=True,
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
@@ -418,9 +423,7 @@ async def chat_interview_turn(
 ) -> ChatTurnResponse:
     """Submit a conversational answer or question to the AI interviewer and receive the next turn."""
     user_id = current_user.id if current_user else None
-    return await service.chat_turn(
-        db=db, session_id=session_id, payload=payload, user_id=user_id
-    )
+    return await service.chat_turn(db=db, session_id=session_id, payload=payload, user_id=user_id)
 
 
 # ==========================================

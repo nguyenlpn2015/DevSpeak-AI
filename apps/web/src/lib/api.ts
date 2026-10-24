@@ -13,8 +13,15 @@ import {
   ProgressSummary,
 } from "@/types";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+export function getApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    const runtimeUrl = (window as unknown as { __NEXT_PUBLIC_API_URL?: string }).__NEXT_PUBLIC_API_URL;
+    if (runtimeUrl) {
+      return runtimeUrl;
+    }
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+}
 
 let memoryToken: string | null = null;
 
@@ -65,7 +72,7 @@ export async function checkBackendStatus(): Promise<{
   questionsLoaded?: number;
 }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/readyz`, {
+    const res = await fetch(`${getApiBaseUrl()}/readyz`, {
       method: "GET",
       headers: { Accept: "application/json" },
       cache: "no-store",
@@ -100,7 +107,7 @@ export async function getQuestions(params?: {
     query.set("difficulty", params.difficulty);
 
   const qs = query.toString();
-  const url = `${API_BASE_URL}/api/v1/questions${qs ? `?${qs}` : ""}`;
+  const url = `${getApiBaseUrl()}/api/v1/questions${qs ? `?${qs}` : ""}`;
 
   let res: Response;
   try {
@@ -111,7 +118,7 @@ export async function getQuestions(params?: {
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to DevSpeak API at ${API_BASE_URL}. Ensure the backend service is running on port 8000.`,
+      `Cannot connect to DevSpeak API at ${getApiBaseUrl()}. Ensure the backend service is running on port 8000.`,
       0
     );
   }
@@ -138,7 +145,7 @@ export async function getQuestions(params?: {
 export async function getQuestionById(id: string): Promise<Question> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/questions/${encodeURIComponent(id)}`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/questions/${encodeURIComponent(id)}`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
       signal: AbortSignal.timeout(4000),
@@ -168,7 +175,7 @@ export async function submitEvaluation(
 ): Promise<FeedbackReport> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/interviews/evaluate`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/interviews/evaluate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -183,7 +190,7 @@ export async function submitEvaluation(
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to evaluation engine at ${API_BASE_URL}. Ensure the backend service is running.`,
+      `Cannot connect to evaluation engine at ${getApiBaseUrl()}. Ensure the backend service is running.`,
       0
     );
   }
@@ -213,7 +220,7 @@ export async function createSession(
 ): Promise<InterviewSession> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/interviews/sessions`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/interviews/sessions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -227,7 +234,7 @@ export async function createSession(
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to DevSpeak API to create session at ${API_BASE_URL}.`,
+      `Cannot connect to DevSpeak API to create session at ${getApiBaseUrl()}.`,
       0
     );
   }
@@ -249,7 +256,7 @@ export async function getSessionDetail(
   let res: Response;
   try {
     res = await fetch(
-      `${API_BASE_URL}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}`,
+      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}`,
       {
         headers: getAuthHeaders(),
         cache: "no-store",
@@ -285,7 +292,7 @@ export async function listSessions(params?: {
   if (params?.offset) query.set("offset", String(params.offset));
 
   const qs = query.toString();
-  const url = `${API_BASE_URL}/api/v1/interviews/sessions${qs ? `?${qs}` : ""}`;
+  const url = `${getApiBaseUrl()}/api/v1/interviews/sessions${qs ? `?${qs}` : ""}`;
 
   let res: Response;
   try {
@@ -296,7 +303,7 @@ export async function listSessions(params?: {
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to DevSpeak API to list sessions at ${API_BASE_URL}.`,
+      `Cannot connect to DevSpeak API to list sessions at ${getApiBaseUrl()}.`,
       0
     );
   }
@@ -315,7 +322,7 @@ export async function submitSessionAttempt(
   let res: Response;
   try {
     res = await fetch(
-      `${API_BASE_URL}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/attempts`,
+      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/attempts`,
       {
         method: "POST",
         headers: {
@@ -328,7 +335,7 @@ export async function submitSessionAttempt(
     );
   } catch {
     throw new ApiError(
-      `Cannot connect to evaluation engine at ${API_BASE_URL}.`,
+      `Cannot connect to evaluation engine at ${getApiBaseUrl()}.`,
       0
     );
   }
@@ -358,7 +365,7 @@ export async function getSessionMessages(
   let res: Response;
   try {
     res = await fetch(
-      `${API_BASE_URL}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/messages`,
+      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/messages`,
       {
         headers: getAuthHeaders(),
         cache: "no-store",
@@ -390,7 +397,7 @@ export async function sendChatTurn(
   let res: Response;
   try {
     res = await fetch(
-      `${API_BASE_URL}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/chat`,
+      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/chat`,
       {
         method: "POST",
         headers: {
@@ -403,7 +410,7 @@ export async function sendChatTurn(
     );
   } catch {
     throw new ApiError(
-      `Cannot connect to AI interviewer service at ${API_BASE_URL}.`,
+      `Cannot connect to AI interviewer service at ${getApiBaseUrl()}.`,
       0
     );
   }
@@ -426,7 +433,7 @@ export async function sendChatTurn(
 export async function getProgressSummary(): Promise<ProgressSummary> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/progress/summary`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/progress/summary`, {
       headers: getAuthHeaders(),
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
@@ -454,7 +461,7 @@ export async function registerCandidate(payload: {
 }): Promise<TokenResponse> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -464,7 +471,7 @@ export async function registerCandidate(payload: {
       signal: AbortSignal.timeout(6000),
     });
   } catch {
-    throw new ApiError(`Cannot connect to auth service at ${API_BASE_URL}.`, 0);
+    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl()}.`, 0);
   }
 
   if (res.status === 409) {
@@ -491,7 +498,7 @@ export async function loginCandidate(payload: {
 }): Promise<TokenResponse> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -501,7 +508,7 @@ export async function loginCandidate(payload: {
       signal: AbortSignal.timeout(6000),
     });
   } catch {
-    throw new ApiError(`Cannot connect to auth service at ${API_BASE_URL}.`, 0);
+    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl()}.`, 0);
   }
 
   if (res.status === 401) {
@@ -525,13 +532,13 @@ export async function getCurrentUser(): Promise<User> {
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+    res = await fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
       headers: getAuthHeaders(),
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
     });
   } catch {
-    throw new ApiError(`Cannot connect to auth service at ${API_BASE_URL}.`, 0);
+    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl()}.`, 0);
   }
 
   if (res.status === 401) {
@@ -550,7 +557,7 @@ export async function logoutCandidate(): Promise<void> {
   try {
     const token = getAuthToken();
     if (token) {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+      await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
         method: "POST",
         headers: getAuthHeaders(),
         signal: AbortSignal.timeout(3000),
