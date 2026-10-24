@@ -847,3 +847,92 @@ Merge the production infrastructure, branch-locked Workload Identity Federation 
    - Frontend UI: `https://devspeak-web-prod-ygz4gsol4q-as.a.run.app`
    - Backend API: `https://devspeak-api-prod-ygz4gsol4q-as.a.run.app`
    - Readiness Endpoint: `https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/readyz`
+
+---
+
+## 2026-10-24: Phase 8 — Public Launch Readiness Audit & v1.0.1 Hardening Release
+
+### Objective:
+Conduct a comprehensive, evidence-based public launch readiness audit across repository integrity, application security, cloud infra & reliability, user experience, and documentation. Remediate all critical P0 launch blockers, verify automated CI/CD pipelines, tag `v1.0.1`, and confirm live production health.
+
+### Actions Taken:
+1. **Pre-Release Audit & Secret Scanning**:
+   - Performed zero-leak secret scan across all 25 Git commits across all branches using Gitleaks: 0 secrets leaked.
+   - Audited application security, API gating, and public exposure:
+     - Discovered `docs/` folder was previously ignored in `.gitignore`, causing all documentation links in `README.md` to return HTTP 404 on GitHub.
+     - Identified BOLA/IDOR vulnerability in interview session endpoints (unauthenticated requests with `user_id = None` were bypassing tenant boundary checks).
+     - Identified brute-force exposure on auth endpoints (`/register`, `/login`) lacking IP-based rate limiting.
+     - Identified mock practice attempts in Web UI not persisting to Cloud SQL for authenticated users.
+2. **P0 Remediations Executed**:
+   - **SEC-01 (BOLA/IDOR Fix)**: Modified `apps/api/src/modules/interviews/service.py` to enforce strict ownership verification `if session.user_id is not None and session.user_id != user_id: raise HTTPException(403)`. Added 4 automated integration tests in `test_auth_endpoints.py`.
+   - **SEC-02 (Rate Limiting)**: Built `InMemoryRateLimiter` (`apps/api/src/core/rate_limit.py`) with Cloud Run `x-forwarded-for` proxy IP resolution. Applied 10 req/min limit to `/register` and 15 req/min to `/login`. Added 3 unit tests.
+   - **FUN-01 (Session Persistence)**: Connected `submitSessionAttempt` in `DevSpeakApp.tsx` and `api.ts`, ensuring live session creation, attempt submission to Cloud SQL, and instant XP/progress dashboard synchronization.
+   - **DOC-01 (Documentation Restored)**: Updated `.gitignore` to un-ignore `docs/` and all markdown files. Tracked and verified 20 architectural and technical documentation files.
+   - **README & CI Harmonization**: Transparently documented mock vs Gemini AI providers; fixed clone path casing; aligned `pip-audit` in `ci.yml` with `cd-production.yml`.
+3. **Automated Verification & Release**:
+   - Backend checks: 70/70 Pytest tests passing, 0 Ruff lint/format errors, Bandit SAST 0 issues.
+   - Frontend checks: 44/44 Vitest tests passing, 0 TypeScript errors, 0 ESLint errors.
+   - GitHub Actions CI (Run `40064607752`): Quality Gates & SAST, Secret Leak Detection, and Frontend CI all PASSED.
+   - GitHub Actions CD (Run `40064607541`): Quality Gates, Container Build & Trivy Scan, and Cloud Run Production Deployment all PASSED.
+   - Live Smoke Probes: Verified 4/4 live production checks on GCP Cloud Run (`/readyz` 200 OK, `/api/v1/questions` 26 items, Web UI dynamic injection, and CORS policy verification).
+   - Remote Tag: `v1.0.1` successfully created, tagged at commit `205e972`, and pushed to GitHub.
+
+---
+
+## 2026-10-24: Track B (Lesson 1 & 2) — GitOps Architecture, Local kind & Argo CD (Milestones B1 & B2)
+
+### Objective:
+Establish a production-grade, local GitOps baseline using Kubernetes-in-Docker (`kind`), Helm charts, NGINX Ingress Controller, decoupled Alembic database migration hooks, and Argo CD GitOps engine—verifying end-to-end workload delivery on `localhost` at zero cloud cost.
+
+### Actions Taken:
+1. **Tooling & Storage Optimization (Milestone B1)**:
+   - Configured devops CLI tools: `helm v4.3.1`, `kind v0.33.0`, and downloaded official `kubectl v1.31.0` to `D:\DEVSPEAK-AI\.bin\kubectl.exe`.
+   - Diagnosed host storage exhaustion on `C:` (0 MB free), purged user temp files to recover 21.75 GB, and configured `D:` drive (102 GB free) as primary persistence partition.
+   - Updated `.gitignore` to protect against committing local binaries (`.bin/`).
+2. **Production-Grade Helm Charts Authored**:
+   - `charts/devspeak-api`: Configured multi-probe health (`startupProbe`, `livenessProbe`, `readinessProbe`), non-root securityContext (UID 10001), HPA autoscaling, ConfigMap/Secret decoupling, and pre-install/pre-upgrade Alembic migration hook job.
+   - `charts/devspeak-web`: Configured Next.js standalone runner, non-root (UID 1001), and dynamic `NEXT_PUBLIC_API_URL` runtime injection.
+   - Verified `helm lint` on both charts with 0 errors, and validated template rendering across 381 lines of manifests.
+3. **Local Infrastructure Deployment (Milestone B2)**:
+   - Created `devspeak-local` kind cluster with host port mappings (80, 443).
+   - Deployed official NGINX Ingress Controller for kind (`ingress-nginx-controller` 1/1 Running).
+   - Deployed ephemeral PostgreSQL container (`postgres-dev` 1/1 Running).
+   - Loaded container images into kind node containerd store.
+   - Deployed `devspeak-api` and `devspeak-web` Helm releases. The Alembic migration hook successfully migrated PostgreSQL tables before pod deployment.
+   - Configured Ingress routing `/api/v1` and `/readyz` to API, and `/` to Web.
+4. **Live Verification (100% Green)**:
+   - `http://localhost/readyz` -> `HTTP 200 OK` (`status: ready`, `questions_loaded: 26`).
+   - `http://localhost/api/v1/questions` -> `HTTP 200 OK` (26 questions loaded).
+   - `http://localhost/` -> `HTTP 200 OK` (Web UI delivered, `window.__NEXT_PUBLIC_API_URL = "http://localhost/api/v1"` verified).
+5. **Argo CD GitOps Controller Installed**:
+   - Deployed Argo CD via server-side apply in `argocd` namespace (all 7 pods running: `application-controller`, `server`, `repo-server`, `redis`, `dex-server`, `notifications`, `applicationset`).
+   - Authored GitOps Application CRDs: `devspeak-api-app.yaml`, `devspeak-web-app.yaml`, and `root-application.yaml` (App-of-Apps pattern).
+
+---
+
+## 2026-10-24: Track B (Lesson 3) — Ephemeral GKE Cluster IaC & GitOps CI Automation (Milestone B3)
+
+### Objective:
+Author cost-controlled Terraform Infrastructure-as-Code for an ephemeral GKE cluster (GKE Autopilot with Workload Identity Federation), GKE-targeted Helm values with HPA autoscaling, and automated GitHub Actions GitOps CI pipeline for image build, push, and desired-state manifest promotion.
+
+### Actions Taken:
+1. **Multi-Environment Health Audit**:
+   - Audited all 3 tiers with live probes: Local kind (100% healthy, 11/11 pods running, HTTP 200 OK on `/`, `/readyz`, `/api/v1/questions`), GCP Staging (Cloud Run healthy, 26 questions verified), GCP Production (Public release v1.0.1 live, Swagger UI securely 404).
+2. **Ephemeral GKE Cluster Terraform Module & Environment**:
+   - Created `infra/terraform/modules/gke/`: Configured GKE Autopilot (`enable_autopilot = true`), `deletion_protection = false` for safe teardown, release channel `REGULAR`, and VPC-native IP allocation.
+   - Configured GKE Workload Identity: Created `devspeak-gke-sa` GCP service account, bound to K8s service account `devspeak/devspeak-gke-sa` via `roles/iam.workloadIdentityUser`.
+   - Granted least-privilege roles: `roles/artifactregistry.reader` (pull images) and `roles/secretmanager.secretAccessor` (read secrets).
+   - Created `infra/terraform/environments/gke/`: Wired GCS remote backend (`terraform/state/gke`) and remote state reference to shared infrastructure.
+3. **GKE Target Helm Environment Configuration**:
+   - Created `deploy/gitops/environments/gke-portfolio/values-api.yaml`: Configured 2 replicas, Workload Identity annotation, HPA (min 2, max 4), and staging database connection.
+   - Created `deploy/gitops/environments/gke-portfolio/values-web.yaml`: Configured 2 replicas, HPA, and dynamic Ingress path mapping.
+   - Created `deploy/gitops/environments/gke-portfolio/ingress-gke.yaml`: Standard Google Cloud HTTP Load Balancer ingress rules.
+   - Tested and verified template rendering on both charts: 288 lines for API, 169 lines for Web.
+4. **Automated GitOps CI Pipeline**:
+   - Created `.github/workflows/gitops-ci.yml`: Keyless authentication via WIF, Docker Buildx image builds, pushes immutable tag `${{ github.sha }}` to Artifact Registry, automatically updates GitOps Helm values, and commits back to Git with `[skip ci]`.
+5. **Cost Protection & Automated Teardown Scripts**:
+   - Created `deploy/gitops/scripts/deploy-gke.ps1` for automated cluster spin-up.
+   - Created `deploy/gitops/scripts/teardown-gke.ps1` enforcing 4-step teardown (LB removal, `terraform destroy`, orphan disk scan, static IP release).
+
+
+

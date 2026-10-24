@@ -1,0 +1,34 @@
+# Environment overrides for local kind development
+replicaCount: 1
+
+image:
+  repository: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-api
+  pullPolicy: IfNotPresent
+  tag: "205e972893d3cd326301a8af3a774c9443e1f35d"
+
+env:
+  ENVIRONMENT: "development"
+  DEBUG: "true"
+  AI_PROVIDER: "mock"
+  AUTO_MIGRATE: "false"
+  PORT: "8000"
+  DATABASE_URL: "postgresql+asyncpg://devspeak_user:devspeak_dev_password@postgres-dev:5432/devspeak_db"
+  CORS_ORIGINS: "http://localhost,http://127.0.0.1,http://devspeak.local"
+  DAILY_QUESTION_QUOTA: "50"
+  MAX_ANSWER_LENGTH: "4000"
+
+secrets:
+  JWT_SECRET_KEY: "devspeak-kind-dev-jwt-secret-key-32chars"
+  DATABASE_PASSWORD: "devspeak_dev_password"
+  GEMINI_API_KEY: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false

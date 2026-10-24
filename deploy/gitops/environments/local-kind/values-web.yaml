@@ -1,0 +1,26 @@
+# Environment overrides for local kind development
+replicaCount: 1
+
+image:
+  repository: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-web
+  pullPolicy: IfNotPresent
+  tag: "205e972893d3cd326301a8af3a774c9443e1f35d"
+
+env:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOSTNAME: "0.0.0.0"
+  NEXT_TELEMETRY_DISABLED: "1"
+  # In kind, Ingress routes /api to the backend API, so browser calls /api/v1 directly on localhost
+  NEXT_PUBLIC_API_URL: "http://localhost/api/v1"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false

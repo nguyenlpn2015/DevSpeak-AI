@@ -1,0 +1,5 @@
+project_id          = "project-12679df0-893b-4260-924"
+region              = "asia-southeast1"
+cluster_name        = "devspeak-gke-portfolio"
+k8s_namespace       = "devspeak"
+k8s_service_account = "devspeak-gke-sa"

@@ -1,0 +1,44 @@
+# GKE Portfolio Environment Configuration for devspeak-api
+replicaCount: 2
+
+image:
+  repository: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-api
+  pullPolicy: IfNotPresent
+  tag: "205e972893d3cd326301a8af3a774c9443e1f35d"
+
+serviceAccount:
+  create: true
+  name: devspeak-gke-sa
+  annotations:
+    iam.gke.io/gcp-service-account: "devspeak-gke-sa@project-12679df0-893b-4260-924.iam.gserviceaccount.com"
+
+env:
+  ENVIRONMENT: "staging"
+  DEBUG: "false"
+  AI_PROVIDER: "mock"
+  AUTO_MIGRATE: "false"
+  PORT: "8000"
+  DATABASE_URL: "postgresql+asyncpg://devspeak_user:devspeak_dev_password@postgres-dev:5432/devspeak_db"
+  CORS_ORIGINS: "http://localhost:3000,http://devspeak.local"
+  DAILY_QUESTION_QUOTA: "25"
+  MAX_ANSWER_LENGTH: "4000"
+
+secrets:
+  JWT_SECRET_KEY: "devspeak-gke-portfolio-jwt-secret-key-32chars"
+  DATABASE_PASSWORD: "devspeak_dev_password"
+  GEMINI_API_KEY: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80

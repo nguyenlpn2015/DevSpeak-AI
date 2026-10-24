@@ -1,0 +1,9 @@
+apiVersion: v2
+name: devspeak-web
+description: Production-grade Helm Chart for DevSpeak AI Frontend (Next.js 15 Standalone)
+type: application
+version: 1.0.0
+appVersion: "1.0.1"
+maintainers:
+  - name: DevSpeak Platform Team
+    email: devspeak@example.com

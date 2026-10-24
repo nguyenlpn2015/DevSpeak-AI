@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "devspeak-api.fullname" . }}-config
+  labels:
+    {{- include "devspeak-api.labels" . | nindent 4 }}
+data:
+  ENVIRONMENT: {{ .Values.env.ENVIRONMENT | quote }}
+  DEBUG: {{ .Values.env.DEBUG | quote }}
+  AI_PROVIDER: {{ .Values.env.AI_PROVIDER | quote }}
+  AUTO_MIGRATE: {{ .Values.env.AUTO_MIGRATE | quote }}
+  PORT: {{ .Values.env.PORT | quote }}
+  DATABASE_URL: {{ .Values.env.DATABASE_URL | quote }}
+  CORS_ORIGINS: {{ .Values.env.CORS_ORIGINS | quote }}
+  DAILY_QUESTION_QUOTA: {{ .Values.env.DAILY_QUESTION_QUOTA | quote }}
+  MAX_ANSWER_LENGTH: {{ .Values.env.MAX_ANSWER_LENGTH | quote }}

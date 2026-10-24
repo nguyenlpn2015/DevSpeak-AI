@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devspeak-root
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: devspeak-root
+    app.kubernetes.io/part-of: devspeak-ai
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/nguyenlpn2015/DevSpeak-AI.git
+    targetRevision: main
+    path: deploy/gitops/apps
+    directory:
+      recurse: false
+      exclude: 'root-application.yaml'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

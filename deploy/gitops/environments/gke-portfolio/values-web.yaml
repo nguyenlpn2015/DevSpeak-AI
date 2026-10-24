@@ -1,0 +1,35 @@
+# GKE Portfolio Environment Configuration for devspeak-web
+replicaCount: 2
+
+image:
+  repository: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-web
+  pullPolicy: IfNotPresent
+  tag: "205e972893d3cd326301a8af3a774c9443e1f35d"
+
+serviceAccount:
+  create: true
+  name: devspeak-gke-sa
+  annotations:
+    iam.gke.io/gcp-service-account: "devspeak-gke-sa@project-12679df0-893b-4260-924.iam.gserviceaccount.com"
+
+env:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOSTNAME: "0.0.0.0"
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Set to the GKE Ingress/Gateway external endpoint
+  NEXT_PUBLIC_API_URL: "/api/v1"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 75

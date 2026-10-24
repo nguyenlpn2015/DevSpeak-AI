@@ -98,6 +98,8 @@ lerna-debug.log*
 *.tfstate.*
 *.tfvars
 *.tfvars.json
+*tfplan*
+*.plan
 override.tf
 override.tf.json
 *_override.tf
@@ -108,6 +110,7 @@ terraform.rc
 # Container & Kubernetes local files
 *.local.yaml
 *.local.yml
+.bin/
 
 # Logs and scratch data
 logs/
