@@ -4,7 +4,7 @@ replicaCount: 2
 image:
   repository: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-api
   pullPolicy: IfNotPresent
-  tag: "205e972893d3cd326301a8af3a774c9443e1f35d"
+  tag: "04bb8abd62d4f86d6aa6b118da95364ddb1c1ae3"
 
 serviceAccount:
   create: true
