@@ -7,7 +7,7 @@ image:
   tag: "04bb8abd62d4f86d6aa6b118da95364ddb1c1ae3"
 
 serviceAccount:
-  create: true
+  create: false
   name: devspeak-gke-sa
   annotations:
     iam.gke.io/gcp-service-account: "devspeak-gke-sa@project-12679df0-893b-4260-924.iam.gserviceaccount.com"

@@ -12,6 +12,7 @@
 *.p12
 secrets/
 credentials.json
+deploy/gitops/.argocd-admin-password.txt
 
 # Operating System Files
 Thumbs.db
