@@ -936,3 +936,39 @@ Author cost-controlled Terraform Infrastructure-as-Code for an ephemeral GKE clu
 
 
 
+---
+
+## 2026-10-24: Track B (Lesson 4) — Live GKE Autopilot Provisioning, Argo CD GitOps Sync & Workload Verification (Milestone B4)
+
+### Objective:
+Provision the ephemeral GKE Autopilot cluster on GCP via Terraform, configure client authentication and Workload Identity, deploy Argo CD v3.5.6 on GKE, configure GitOps applications for `gke-portfolio`, execute Alembic pre-sync database migration hook, and verify live high-availability workloads and HPA autoscaling.
+
+### Actions Taken:
+1. **GKE Autopilot Provisioning via Terraform**:
+   - Enabled `container.googleapis.com` API on GCP project `project-12679df0-893b-4260-924`.
+   - Applied Terraform in `infra/terraform/environments/gke`: Successfully provisioned regional cluster `devspeak-gke-portfolio` in `asia-southeast1`.
+   - Control plane endpoint: `34.142.190.245`.
+   - Bound Workload Identity: `devspeak-gke-sa@project-12679df0-893b-4260-924.iam.gserviceaccount.com` to K8s SA `devspeak/devspeak-gke-sa`.
+2. **Client Authentication Tooling**:
+   - Installed `gke-auth-plugin` v0.6.3 in `D:\DEVSPEAK-AI\.bin\gke-gcloud-auth-plugin.exe` and registered in Windows User PATH.
+   - Updated `~/.kube/config` to resolve authentication without requiring local admin rights for gcloud component installation.
+3. **Argo CD Controller on GKE Autopilot**:
+   - Applied official Argo CD v3.5.6 manifests using server-side apply (`--server-side --force-conflicts`).
+   - Autopilot dynamic node auto-provisioning automatically scaled out nodes (`gk3-devspeak-gke-portfol-nap-*`).
+   - Verified all 7 Argo CD core pods reaching 1/1 Running state (`application-controller`, `applicationset-controller`, `dex-server`, `notifications-controller`, `redis`, `repo-server`, `argocd-server`).
+4. **Node Artifact Registry IAM Hardening**:
+   - Diagnosed initial 403 Forbidden on image pull for GKE nodes.
+   - Resolved by granting `roles/artifactregistry.reader` to default Compute Engine service account `359194986638-compute@developer.gserviceaccount.com`.
+5. **GitOps Applications & Workload Deployment**:
+   - Deployed ephemeral PostgreSQL container in namespace `devspeak`.
+   - Created GitOps applications in `deploy/gitops/apps/gke-portfolio/`: `devspeak-api-app.yaml`, `devspeak-web-app.yaml`, and `root-application.yaml`.
+   - Argo CD executed `PreSync` Alembic migration hook (`devspeak-api-gke-migration-*`), successfully migrating database schema and seeding 26 questions into PostgreSQL.
+   - Deployed 2 replicas of `devspeak-api` and 2 replicas of `devspeak-web` with HPA autoscaling enabled.
+6. **Live End-to-End Verification (100% Green)**:
+   - Argo CD Applications: `devspeak-api-gke`, `devspeak-web-gke`, `devspeak-gke-root` all report **`SYNC STATUS: Synced`**, **`HEALTH STATUS: Healthy`**.
+   - API Pods: 2/2 Running, probes passed. Curl to `/readyz` -> `{"status":"ready","ai_provider":"mock","questions_loaded":26}`.
+   - Web Pods: 2/2 Running, probes passed. Curl to `/` -> `HTTP/1.1 200 OK`.
+   - HPA: Active and collecting live CPU and memory metrics (`devspeak-api` at 2% CPU / 25% Memory, `devspeak-web` active).
+7. **Security & Teardown Readiness**:
+   - Argo CD initial admin password retrieved and securely stored in `deploy/gitops/.argocd-admin-password.txt` (strictly gitignored).
+   - Validated teardown workflow `deploy/gitops/scripts/teardown-gke.ps1` to ensure zero unexpected costs when decommissioning.
