@@ -16,6 +16,8 @@ import {
   getQuestions,
   getQuestionById,
   submitEvaluation,
+  createSession,
+  submitSessionAttempt,
   getProgressSummary,
 } from "@/lib/api";
 
@@ -45,6 +47,7 @@ export function DevSpeakApp() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressSummary | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // Probe backend status
   const checkHealth = useCallback(async () => {
@@ -114,6 +117,7 @@ export function DevSpeakApp() {
   const handleStartPractice = async (idOrQuestion: string | Question) => {
     setSubmitError(null);
     setReport(null);
+    setCurrentSessionId(null);
 
     if (typeof idOrQuestion === "string") {
       setDetailLoading(true);
@@ -145,9 +149,31 @@ export function DevSpeakApp() {
     setSubmitError(null);
 
     try {
-      const result = await submitEvaluation(selectedQuestion.id, userAnswer);
+      let activeSessionId = currentSessionId;
+      if (!activeSessionId) {
+        try {
+          const newSession = await createSession(selectedQuestion.id);
+          activeSessionId = newSession.id;
+          setCurrentSessionId(activeSessionId);
+        } catch {
+          activeSessionId = null;
+        }
+      }
+
+      let result: FeedbackReport;
+      if (activeSessionId) {
+        try {
+          const attempt = await submitSessionAttempt(activeSessionId, userAnswer);
+          result = attempt.feedback;
+        } catch {
+          result = await submitEvaluation(selectedQuestion.id, userAnswer, activeSessionId);
+        }
+      } else {
+        result = await submitEvaluation(selectedQuestion.id, userAnswer);
+      }
+
       setReport(result);
-      fetchProgress();
+      await fetchProgress();
       setActiveTab("practice");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: unknown) {

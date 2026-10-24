@@ -186,6 +186,30 @@ async def test_authenticated_session_isolation(async_client: AsyncClient) -> Non
     )
     assert attempt_cross.status_code == 403
 
+    # Unauthenticated caller cannot access Candidate A's session (403 BOLA defense)
+    get_anon_cross = await async_client.get(f"/api/v1/interviews/sessions/{sess_a_id}")
+    assert get_anon_cross.status_code == 403
+
+    # Unauthenticated caller cannot submit attempt to Candidate A's session (403 BOLA defense)
+    attempt_anon_cross = await async_client.post(
+        f"/api/v1/interviews/sessions/{sess_a_id}/attempts",
+        json={"user_answer": "This is an unauthorized attempt from an anonymous caller."},
+    )
+    assert attempt_anon_cross.status_code == 403
+
+    # Unauthenticated caller cannot access messages of Candidate A's session (403)
+    messages_anon_cross = await async_client.get(
+        f"/api/v1/interviews/sessions/{sess_a_id}/messages"
+    )
+    assert messages_anon_cross.status_code == 403
+
+    # Unauthenticated caller cannot send chat turn to Candidate A's session (403)
+    chat_anon_cross = await async_client.post(
+        f"/api/v1/interviews/sessions/{sess_a_id}/chat",
+        json={"message": "Anonymous attempt to hijack dialogue."},
+    )
+    assert chat_anon_cross.status_code == 403
+
     # Candidate A listing only sees Candidate A's session
     list_a = await async_client.get("/api/v1/interviews/sessions", headers=headers_a)
     assert list_a.status_code == 200

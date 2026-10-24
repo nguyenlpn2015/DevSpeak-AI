@@ -100,7 +100,7 @@ class InterviewService:
                 detail=f"Interview session '{session_id}' not found.",
             )
 
-        if session.user_id is not None and user_id is not None and session.user_id != user_id:
+        if session.user_id is not None and session.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this interview session.",
@@ -191,7 +191,7 @@ class InterviewService:
                 detail=f"Interview session '{session_id}' not found.",
             )
 
-        if session.user_id is not None and user_id is not None and session.user_id != user_id:
+        if session.user_id is not None and session.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to submit an attempt for this interview session.",
@@ -247,7 +247,7 @@ class InterviewService:
                 detail=f"Interview session '{session_id}' not found.",
             )
 
-        if session.user_id is not None and user_id is not None and session.user_id != user_id:
+        if session.user_id is not None and session.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access messages for this interview session.",
@@ -312,7 +312,7 @@ class InterviewService:
                 detail=f"Interview session '{session_id}' not found.",
             )
 
-        if session.user_id is not None and user_id is not None and session.user_id != user_id:
+        if session.user_id is not None and session.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to participate in this interview session.",

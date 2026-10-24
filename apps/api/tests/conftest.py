@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from src.core.rate_limit import auth_login_limiter, auth_register_limiter
 from src.db.base import Base
 from src.db.session import get_db_session
 from src.main import app
@@ -88,6 +89,8 @@ async def async_client(test_engine: AsyncEngine) -> AsyncGenerator[AsyncClient, 
                 await session.close()
 
     app.dependency_overrides[get_db_session] = override_get_db_session
+    auth_register_limiter.reset()
+    auth_login_limiter.reset()
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as client:

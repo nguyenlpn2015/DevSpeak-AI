@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import Settings, get_settings
+from src.core.rate_limit import auth_login_limiter, auth_register_limiter
 from src.db.session import get_db_session, get_engine
 from src.modules.ai.exceptions import (
     AIConfigurationError,
@@ -253,6 +254,7 @@ async def register(
     payload: UserRegisterRequest,
     db: AsyncSession = Depends(get_db_session),
     auth_service: AuthService = Depends(get_auth_service),
+    _limiter: None = Depends(auth_register_limiter),
 ) -> TokenResponse:
     """Register a new candidate, hash password with Argon2id, and issue a JWT access token."""
     return await auth_service.register(db=db, payload=payload)
@@ -268,6 +270,7 @@ async def login(
     payload: UserLoginRequest,
     db: AsyncSession = Depends(get_db_session),
     auth_service: AuthService = Depends(get_auth_service),
+    _limiter: None = Depends(auth_login_limiter),
 ) -> TokenResponse:
     """Validate credentials and return JWT bearer access token."""
     return await auth_service.login(db=db, payload=payload)

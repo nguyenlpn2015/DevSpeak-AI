@@ -116,12 +116,9 @@ scratch/
 tmp/
 temp/
 
-# Documentation, Study, and Markdown files (Strictly excluded from GitHub as requested)
-docs/
+# Personal Study notes and agent instructions
 study/
-*.md
-**/*.md
-!README.md
+GEMINI.md
 
 
 

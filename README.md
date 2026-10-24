@@ -24,6 +24,10 @@ The application is deployed live in the `asia-southeast1` (Singapore) region usi
 | **Readiness Health Probe** | Observability Probe | [https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/readyz](https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/readyz) |
 | **Curated Question Catalog**| Business API Endpoint | [https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/api/v1/questions](https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/api/v1/questions) |
 
+> [!NOTE]
+> **Public Showcase Architecture & AI Engine:**
+> To guarantee deterministic evaluation, zero external API costs, and candidate privacy (no user inputs transmitted to commercial third-party LLMs), the public production showcase runs using DevSpeak AI's **Deterministic Heuristic Mock Provider** by default. Live Google Gemini LLM evaluation can be enabled anytime in local or dedicated cloud deployments by setting `AI_PROVIDER=gemini` and providing a `GEMINI_API_KEY`.
+
 ---
 
 ## 🌟 Key Product Features
@@ -31,7 +35,7 @@ The application is deployed live in the `asia-southeast1` (Singapore) region usi
 - **Flagship LinguaFlow Learning Studio**: Modern dark-neon learning dashboard with real-time day streak tracking, XP progression, target CEFR level milestones, and interactive 3D flashcards with audio pronunciation.
 - **Curated 26-Question IT & DevOps Catalog**: Comprehensive scenarios spanning Kubernetes architecture, CI/CD DevSecOps pipelines, Linux SRE internals, AWS cloud infrastructure, Docker containerization, system design, and STAR behavioral leadership.
 - **3-Zone AI Interview Studio**: Integrated workspace featuring prompt specifications, live answer draft editor, 1-click technical vocabulary insertion, STAR framework generators, and expert benchmark model answers.
-- **Interactive Multi-Turn Interview Chatbot**: Stateful conversational interview lifecycle where the AI interviewer introduces scenarios, probes operational edge cases across multiple turns, and issues a final holistic performance report.
+- **Stateful Multi-Turn Interview Dialogue Engine**: Complete conversational interview lifecycle where the AI interviewer introduces scenarios, probes operational edge cases across multiple turns, and issues a final holistic performance report (Engine REST API & Client SDK active; Web Chat UI component scheduled for v1.1.0).
 - **Voice Mode (Speech-to-Text)**: Native browser Web Speech API integration allowing candidates to articulate answers via microphone with real-time transcription.
 - **Multi-Dimensional AI Feedback**: Objective evaluation across Technical Accuracy, Clarity & STAR Structure, and English Grammar & Professional Tone (1.0–10.0 scale).
 - **Local-First & Zero-Cost Privacy**: Operates 100% offline using a built-in deterministic Heuristic Mock AI provider or connects securely to Google Gemini APIs without storing credentials in the cloud.
@@ -105,7 +109,7 @@ The application is deployed live in the `asia-southeast1` (Singapore) region usi
 ```bash
 # 1. Clone the repository
 git clone https://github.com/nguyenlpn2015/DevSpeak-AI.git
-cd devspeak-ai
+cd DevSpeak-AI
 
 # 2. Start the complete multi-container stack
 docker compose up -d --build

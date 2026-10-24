@@ -180,6 +180,7 @@ export async function submitEvaluation(
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({
         question_id: questionId,
@@ -466,6 +467,7 @@ export async function registerCandidate(payload: {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(6000),
@@ -503,6 +505,7 @@ export async function loginCandidate(payload: {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(6000),
