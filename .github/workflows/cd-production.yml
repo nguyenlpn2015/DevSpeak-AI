@@ -27,8 +27,8 @@ env:
   API_SERVICE: "devspeak-api-prod"
   WEB_SERVICE: "devspeak-web-prod"
   MIGRATION_JOB: "devspeak-migration-prod"
-  PROD_API_URL: "https://devspeak-api-prod-359194986638.asia-southeast1.run.app"
-  PROD_WEB_URL: "https://devspeak-web-prod-359194986638.asia-southeast1.run.app"
+  PROD_API_URL: "https://devspeak-api-prod-ygz4gsol4q-as.a.run.app"
+  PROD_WEB_URL: "https://devspeak-web-prod-ygz4gsol4q-as.a.run.app"
 
 jobs:
   # =========================================================================
@@ -181,7 +181,7 @@ jobs:
   deploy-production:
     name: Deploy to Cloud Run Production (Branch-Locked WIF)
     needs: [quality-gates, container-build-scan]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -274,26 +274,61 @@ jobs:
 
       - name: Post-Deployment Smoke Probes
         run: |
-          echo "[DevSpeak CD] Probing Production endpoints..."
+          set -e
+          echo "[DevSpeak CD] Running production post-deployment smoke probes..."
           API_URL="${{ env.PROD_API_URL }}"
           WEB_URL="${{ env.PROD_WEB_URL }}"
 
           # Probe 1: Backend Readiness Probe
-          echo "Checking ${API_URL}/readyz..."
+          echo "[Probe 1/4] Checking ${API_URL}/readyz..."
           READY_OUTPUT=$(curl -fsSL --retry 5 --retry-delay 5 "${API_URL}/readyz")
-          echo "Readiness response: ${READY_OUTPUT}"
           echo "${READY_OUTPUT}" | grep -q '"status":"ready"'
-          echo "Readiness probe: PASSED (200 OK)"
+          echo "-> Readiness probe: PASSED (200 OK)"
 
           # Probe 2: Question Catalog Endpoint
-          echo "Checking ${API_URL}/api/v1/questions..."
+          echo "[Probe 2/4] Checking ${API_URL}/api/v1/questions..."
           QUESTIONS_OUTPUT=$(curl -fsSL --retry 5 --retry-delay 5 "${API_URL}/api/v1/questions")
           echo "${QUESTIONS_OUTPUT}" | grep -q '"total":26'
-          echo "Questions catalog probe: PASSED (26 questions verified)"
+          echo "-> Question catalog probe: PASSED (26 questions verified)"
 
-          # Probe 3: Frontend Web UI Probe
-          echo "Checking ${WEB_URL}..."
-          curl -fsSL --retry 5 --retry-delay 5 "${WEB_URL}" | grep -qi 'DevSpeak'
-          echo "Frontend UI probe: PASSED (200 OK)"
+          # Probe 3: Frontend Web UI & Exact Injected Runtime API URL Probe
+          echo "[Probe 3/4] Checking ${WEB_URL} and exact runtime API URL injection..."
+          WEB_OUTPUT=$(curl -fsSL --retry 5 --retry-delay 5 "${WEB_URL}")
+          echo "${WEB_OUTPUT}" | grep -qi 'DevSpeak'
+          EXPECTED_INJECTION="window.__NEXT_PUBLIC_API_URL = \"${API_URL}\";"
+          if ! echo "${WEB_OUTPUT}" | grep -Fq "${EXPECTED_INJECTION}"; then
+            echo "ERROR: Runtime API URL injection does not match expected production API URL: ${API_URL}"
+            exit 1
+          fi
+          echo "-> Frontend UI & runtime config probe: PASSED (Exact URL match verified)"
 
-          echo "[DevSpeak CD] All production health probes passed successfully!"
+          # Probe 4: Comprehensive CORS Verification (Authorized Origin, Preflight OPTIONS, & Unauthorized Rejection)
+          echo "[Probe 4/4] Verifying CORS policies on ${API_URL}..."
+
+          # 4a. Authorized Origin Exact Match on Actual API Route
+          CORS_HEADER=$(curl -sI -H "Origin: ${WEB_URL}" "${API_URL}/api/v1/questions" | tr -d '\r' | grep -i '^access-control-allow-origin:' | awk '{print $2}' || true)
+          if [ "${CORS_HEADER}" != "${WEB_URL}" ]; then
+            echo "ERROR: Access-Control-Allow-Origin '${CORS_HEADER}' does not exactly equal expected Web origin '${WEB_URL}'"
+            exit 1
+          fi
+
+          # 4b. Preflight OPTIONS on POST route
+          PREFLIGHT_STATUS=$(curl -sI -o /dev/null -w "%{http_code}" -X OPTIONS \
+            -H "Origin: ${WEB_URL}" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type,authorization" \
+            "${API_URL}/api/v1/auth/login")
+          if [ "${PREFLIGHT_STATUS}" != "200" ]; then
+            echo "ERROR: Preflight OPTIONS request failed with HTTP ${PREFLIGHT_STATUS}"
+            exit 1
+          fi
+
+          # 4c. Unauthorized Origin Rejection (Must NOT return Access-Control-Allow-Origin)
+          UNAUTHORIZED_ORIGIN="https://malicious-attacker-unauthorized.com"
+          if curl -sI -H "Origin: ${UNAUTHORIZED_ORIGIN}" "${API_URL}/api/v1/questions" | tr -d '\r' | grep -qi '^access-control-allow-origin:'; then
+            echo "ERROR: Unauthorized origin '${UNAUTHORIZED_ORIGIN}' was incorrectly granted Access-Control-Allow-Origin!"
+            exit 1
+          fi
+
+          echo "-> CORS security probe: PASSED (Exact origin matched, preflight 200 OK, unauthorized origin rejected)"
+          echo "[DevSpeak CD] All production verification probes passed successfully!"
