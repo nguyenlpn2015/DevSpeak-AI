@@ -11,7 +11,7 @@ resource "google_cloud_run_v2_service" "api" {
 
     scaling {
       min_instance_count = 0                                 # Scale-to-zero compute (Zero Idle Cost)
-      max_instance_count = var.environment == "prod" ? 3 : 2 # Cost control cap
+      max_instance_count = var.environment == "prod" ? 2 : 1 # Connection cap: Staging=1 (max 5 conn), Prod=2 (max 10 conn) -> Max 15 conn <= 22 net usable on db-f1-micro
     }
 
     volumes {

@@ -1,0 +1,299 @@
+name: DevSpeak AI - Production Continuous Deployment & DevSecOps
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Least-privilege permissions by default; id-token: write is required for WIF OIDC
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # Never cancel production deployments in-flight
+
+env:
+  GCP_PROJECT_ID: "project-12679df0-893b-4260-924"
+  GCP_REGION: "asia-southeast1"
+  WIF_PROVIDER: "projects/359194986638/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
+  WIF_SERVICE_ACCOUNT: "devspeak-prod-deployer-sa@project-12679df0-893b-4260-924.iam.gserviceaccount.com"
+  ARTIFACT_REGISTRY: "asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker"
+  API_SERVICE: "devspeak-api-prod"
+  WEB_SERVICE: "devspeak-web-prod"
+  MIGRATION_JOB: "devspeak-migration-prod"
+  PROD_API_URL: "https://devspeak-api-prod-359194986638.asia-southeast1.run.app"
+  PROD_WEB_URL: "https://devspeak-web-prod-359194986638.asia-southeast1.run.app"
+
+jobs:
+  # =========================================================================
+  # Job 1: Quality Gates & SAST (Runs on PR & Push to main)
+  # =========================================================================
+  quality-gates:
+    name: Quality Gates & SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret Leak Detection (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- Backend Checks ---
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: apps/api/requirements-dev.txt
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r apps/api/requirements-dev.txt
+
+      - name: Python Linting & Formatting Check (Ruff)
+        working-directory: apps/api
+        run: |
+          python -m ruff check .
+          python -m ruff format --check .
+
+      - name: Static Application Security Testing (Bandit SAST)
+        working-directory: apps/api
+        run: python -m bandit -r src
+
+      - name: Dependency Vulnerability Audit (pip-audit)
+        working-directory: apps/api
+        continue-on-error: true
+        run: python -m pip-audit -r requirements.txt
+
+      - name: Test Alembic Migrations (SQLite Test)
+        working-directory: apps/api
+        run: python -m alembic upgrade head
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./ci_test_migration.db"
+          AI_PROVIDER: "mock"
+
+      - name: Run Backend Unit & Integration Tests (Pytest)
+        working-directory: apps/api
+        run: python -m pytest -v
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./ci_test.db"
+          AI_PROVIDER: "mock"
+          ENVIRONMENT: "test"
+
+      # --- Frontend Checks ---
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install Frontend dependencies (npm ci)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: TypeScript Type Check (tsc)
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Frontend Code Linting (ESLint)
+        working-directory: apps/web
+        run: npm run lint
+
+      - name: Frontend Unit & Component Tests (Vitest)
+        working-directory: apps/web
+        run: npm test
+
+      - name: Frontend Production Build Test
+        working-directory: apps/web
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ env.PROD_API_URL }}
+
+  # =========================================================================
+  # Job 2: Container Hardening & Vulnerability Scan (Runs on PR & Push to main)
+  # =========================================================================
+  container-build-scan:
+    name: Container Build & Vulnerability Scan
+    needs: quality-gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Container Locally
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile
+          load: true
+          tags: devspeak-api:test
+
+      - name: Build Frontend Container Locally
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          file: apps/web/Dockerfile
+          load: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.PROD_API_URL }}
+          tags: devspeak-web:test
+
+      - name: Scan Backend Container with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devspeak-api:test
+          format: "table"
+          exit-code: "0"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+      - name: Scan Frontend Container with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devspeak-web:test
+          format: "table"
+          exit-code: "0"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+  # =========================================================================
+  # Job 3: Continuous Deployment to Cloud Run Production (Push to main only)
+  # =========================================================================
+  deploy-production:
+    name: Deploy to Cloud Run Production (Branch-Locked WIF)
+    needs: [quality-gates, container-build-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation (main branch only)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Authorize Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push Backend API Production Image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ARTIFACT_REGISTRY }}/devspeak-api:${{ github.sha }}
+            ${{ env.ARTIFACT_REGISTRY }}/devspeak-api:prod
+
+      - name: Build & Push Frontend Web Production Image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          file: apps/web/Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.PROD_API_URL }}
+          tags: |
+            ${{ env.ARTIFACT_REGISTRY }}/devspeak-web:${{ github.sha }}
+            ${{ env.ARTIFACT_REGISTRY }}/devspeak-web:prod
+
+      - name: Execute Decoupled Production Database Migration Gate
+        run: |
+          echo "[DevSpeak CD] Running production database migrations on Cloud SQL..."
+          IMAGE="${{ env.ARTIFACT_REGISTRY }}/devspeak-api:${{ github.sha }}"
+          JOB_NAME="${{ env.MIGRATION_JOB }}"
+          REGION="${{ env.GCP_REGION }}"
+
+          if gcloud run jobs describe "${JOB_NAME}" --region "${REGION}" --quiet > /dev/null 2>&1; then
+            echo "[DevSpeak CD] Updating existing production migration job to image ${IMAGE}..."
+            gcloud run jobs update "${JOB_NAME}" \
+              --image "${IMAGE}" \
+              --region "${REGION}"
+          else
+            echo "[DevSpeak CD] Initializing production migration job on-the-fly..."
+            gcloud run jobs create "${JOB_NAME}" \
+              --image "${IMAGE}" \
+              --region "${REGION}" \
+              --service-account "devspeak-api-prod-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+              --set-cloudsql-instances "${{ env.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:devspeak-db-ef9683a6" \
+              --set-env-vars "^|^ENVIRONMENT=production|AI_PROVIDER=mock|DATABASE_URL=postgresql+asyncpg://devspeak_prod_user@/devspeak_prod?host=/cloudsql/${{ env.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:devspeak-db-ef9683a6" \
+              --set-secrets "^|^PGPASSWORD=devspeak-db-password-prod:latest|DATABASE_PASSWORD=devspeak-db-password-prod:latest" \
+              --args "python,-m,alembic,upgrade,head"
+          fi
+
+          echo "[DevSpeak CD] Executing database migration and awaiting completion..."
+          gcloud run jobs execute "${JOB_NAME}" --region "${REGION}" --wait
+          echo "[DevSpeak CD] Production migration completed successfully!"
+
+      - name: Deploy API Revision to Cloud Run Production
+        run: |
+          echo "[DevSpeak CD] Deploying new API revision to Cloud Run Production..."
+          gcloud run deploy ${{ env.API_SERVICE }} \
+            --image "${{ env.ARTIFACT_REGISTRY }}/devspeak-api:${{ github.sha }}" \
+            --region ${{ env.GCP_REGION }} \
+            --quiet
+
+      - name: Deploy Web Revision to Cloud Run Production
+        run: |
+          echo "[DevSpeak CD] Deploying new Web revision to Cloud Run Production..."
+          gcloud run deploy ${{ env.WEB_SERVICE }} \
+            --image "${{ env.ARTIFACT_REGISTRY }}/devspeak-web:${{ github.sha }}" \
+            --region ${{ env.GCP_REGION }} \
+            --quiet
+
+      - name: Post-Deployment Smoke Probes
+        run: |
+          echo "[DevSpeak CD] Probing Production endpoints..."
+          API_URL="${{ env.PROD_API_URL }}"
+          WEB_URL="${{ env.PROD_WEB_URL }}"
+
+          # Probe 1: Backend Readiness Probe
+          echo "Checking ${API_URL}/readyz..."
+          READY_OUTPUT=$(curl -fsSL --retry 5 --retry-delay 5 "${API_URL}/readyz")
+          echo "Readiness response: ${READY_OUTPUT}"
+          echo "${READY_OUTPUT}" | grep -q '"status":"ready"'
+          echo "Readiness probe: PASSED (200 OK)"
+
+          # Probe 2: Question Catalog Endpoint
+          echo "Checking ${API_URL}/api/v1/questions..."
+          QUESTIONS_OUTPUT=$(curl -fsSL --retry 5 --retry-delay 5 "${API_URL}/api/v1/questions")
+          echo "${QUESTIONS_OUTPUT}" | grep -q '"total":26'
+          echo "Questions catalog probe: PASSED (26 questions verified)"
+
+          # Probe 3: Frontend Web UI Probe
+          echo "Checking ${WEB_URL}..."
+          curl -fsSL --retry 5 --retry-delay 5 "${WEB_URL}" | grep -qi 'DevSpeak'
+          echo "Frontend UI probe: PASSED (200 OK)"
+
+          echo "[DevSpeak CD] All production health probes passed successfully!"
