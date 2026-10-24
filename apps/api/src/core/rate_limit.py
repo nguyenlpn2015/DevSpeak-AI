@@ -5,8 +5,6 @@ from collections import defaultdict
 
 from fastapi import HTTPException, Request, status
 
-from src.core.config import get_settings
-
 
 class InMemoryRateLimiter:
     """Thread-safe sliding-window rate limiter per client IP."""
@@ -37,8 +35,7 @@ class InMemoryRateLimiter:
 
     def check(self, request: Request) -> None:
         """Enforce rate limit for incoming client request."""
-        settings = get_settings()
-        limit = 200 if settings.ENVIRONMENT == "test" else self.requests_limit
+        limit = self.requests_limit
 
         now = time.monotonic()
         client_ip = self._get_client_ip(request)
