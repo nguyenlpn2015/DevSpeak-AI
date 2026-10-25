@@ -182,6 +182,9 @@ jobs:
     name: Deploy to Cloud Run Staging (Keyless WIF)
     needs: [quality-gates, container-build-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: staging
+      url: ${{ env.STAGING_WEB_URL }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

@@ -22,12 +22,11 @@ DevSpeak AI eliminates static long-lived credentials (such as service account JS
   attribute.ref = assertion.ref
   ```
 
-### 2.2. Production Service Account Hardening
-The production deployer service account `devspeak-prod-deployer-sa` is restricted to mint credentials exclusively when the GitHub OIDC assertion matches:
-```text
-subject/repo:nguyenlpn2015/DevSpeak-AI:ref:refs/heads/main
-```
-If a job is triggered from a fork, an unapproved branch, or a pull request, Google Security Token Service (STS) rejects the request with HTTP 403 Forbidden.
+### 2.2. Production Service Account Hardening & Branch Protection
+Production deployment security enforces a multi-layered boundary:
+- **Workload Identity Binding**: Service account `devspeak-prod-deployer-sa` is bound to the repository identity (`attribute.repository/nguyenlpn2015/DevSpeak-AI`). Any unauthorized fork or external caller is rejected by Google STS.
+- **Workflow Branch Guard**: The production deployment workflow (`.github/workflows/cd-production.yml`) strictly gates `deploy-production` to `refs/heads/main`. Pull requests from forks or feature branches are evaluated only by offline `quality-gates` and `container-build-scan` without deploying.
+- **Least-Privilege Roles**: The production deployer possesses `roles/run.admin` and `roles/artifactregistry.writer` strictly bounded to production resources.
 
 ---
 

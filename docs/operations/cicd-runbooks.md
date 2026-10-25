@@ -91,12 +91,22 @@ Static GCP service account JSON keys are strictly prohibited in DevSpeak AI. Git
   (4) Mints short-lived OAuth 2.0 access token (valid 1 hour)
 ```
 
-### Production IAM Branch-Lock Protection
-In `infra/terraform/environments/prod/main.tf`, the IAM binding restricts token minting strictly to the `main` branch:
-```hcl
-member = "principal://iam.googleapis.com/${split("/providers/", data.terraform_remote_state.shared.outputs.wif_provider_name)[0]}/subject/repo:nguyenlpn2015/DevSpeak-AI:ref:refs/heads/main"
-```
-Any job attempting to impersonate `devspeak-prod-deployer-sa` from a branch other than `refs/heads/main` or a fork is immediately rejected with HTTP 403 Forbidden.
+### Production Branch-Lock & WIF Protection Architecture
+Production deployments enforce a defense-in-depth model across both GitHub Actions workflow conditions and Google Cloud IAM bindings:
+
+1. **Workflow-Level Branch Guard (`cd-production.yml`)**:
+   The `deploy-production` job executes strictly when triggered on the `main` branch:
+   ```yaml
+   if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+   ```
+   Pull requests against `main` only execute `quality-gates` and `container-build-scan` test jobs, and cannot trigger deployment steps.
+
+2. **Repository-Scoped Workload Identity Binding**:
+   In `infra/terraform/environments/prod/main.tf` and Google Cloud IAM, `devspeak-prod-deployer-sa` is bound to the repository attribute:
+   ```hcl
+   member = "principalSet://iam.googleapis.com/${split("/providers/", data.terraform_remote_state.shared.outputs.wif_provider_name)[0]}/attribute.repository/${var.github_repo}"
+   ```
+   This ensures that forks or untrusted repositories outside `nguyenlpn2015/DevSpeak-AI` are rejected by Google Security Token Service (STS) with HTTP 403 Forbidden.
 
 ---
 

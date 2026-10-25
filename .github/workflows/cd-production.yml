@@ -182,6 +182,9 @@ jobs:
     name: Deploy to Cloud Run Production (Branch-Locked WIF)
     needs: [quality-gates, container-build-scan]
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ env.PROD_WEB_URL }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
