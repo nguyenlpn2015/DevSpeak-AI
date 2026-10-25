@@ -4,6 +4,9 @@ import {
   getQuestions,
   getQuestionById,
   submitEvaluation,
+  normalizeApiBaseUrl,
+  buildApiUrl,
+  getApiBaseUrl,
   ApiError,
 } from "@/lib/api";
 
@@ -233,6 +236,92 @@ describe("API Client Test Suite (apps/web/src/lib/api.ts)", () => {
       await expect(
         submitEvaluation("devops-k8s-001", "A valid long answer that fails over network.")
       ).rejects.toThrow(/Cannot connect to evaluation engine/i);
+    });
+  });
+
+  describe("API Base URL Contract & Normalization (Workstream 1 Regression Suite)", () => {
+    it("handles empty or nullish base URLs by returning empty string", () => {
+      expect(normalizeApiBaseUrl("")).toBe("");
+      expect(normalizeApiBaseUrl(null)).toBe("");
+      expect(normalizeApiBaseUrl(undefined)).toBe("");
+      expect(normalizeApiBaseUrl("   ")).toBe("");
+    });
+
+    it("handles origin-only URLs cleanly", () => {
+      expect(normalizeApiBaseUrl("http://localhost")).toBe("http://localhost");
+      expect(normalizeApiBaseUrl("http://localhost:8000")).toBe("http://localhost:8000");
+      expect(normalizeApiBaseUrl("https://devspeak-api-prod.run.app")).toBe("https://devspeak-api-prod.run.app");
+    });
+
+    it("safely strips trailing slashes from origin-only URLs", () => {
+      expect(normalizeApiBaseUrl("http://localhost/")).toBe("http://localhost");
+      expect(normalizeApiBaseUrl("http://localhost:8000///")).toBe("http://localhost:8000");
+      expect(normalizeApiBaseUrl("https://devspeak-api-prod.run.app/")).toBe("https://devspeak-api-prod.run.app");
+    });
+
+    it("safely strips redundant /api/v1 suffix from base URL", () => {
+      expect(normalizeApiBaseUrl("http://localhost/api/v1")).toBe("http://localhost");
+      expect(normalizeApiBaseUrl("http://localhost/api/v1/")).toBe("http://localhost");
+      expect(normalizeApiBaseUrl("/api/v1")).toBe("");
+      expect(normalizeApiBaseUrl("/api/v1/")).toBe("");
+    });
+
+    it("safely strips duplicate or malformed trailing path segments", () => {
+      expect(normalizeApiBaseUrl("http://localhost/api/v1/api/v1")).toBe("http://localhost");
+      expect(normalizeApiBaseUrl("http://localhost/api/v1/api/v1///")).toBe("http://localhost");
+      expect(normalizeApiBaseUrl("/api/v1/api/v1")).toBe("");
+    });
+
+    it("preserves intentional subpaths while removing trailing /api/v1", () => {
+      expect(normalizeApiBaseUrl("https://example.com/subapp")).toBe("https://example.com/subapp");
+      expect(normalizeApiBaseUrl("https://example.com/subapp/api/v1")).toBe("https://example.com/subapp");
+    });
+
+    it("buildApiUrl constructs consistent endpoints without duplicate /api/v1 or double slashes", () => {
+      // 1. Empty base URL (e.g. GKE origin-relative)
+      expect(buildApiUrl("/api/v1/questions", "")).toBe("/api/v1/questions");
+      expect(buildApiUrl("/readyz", "")).toBe("/readyz");
+
+      // 2. Origin-only URL (e.g. Local kind with Ingress)
+      expect(buildApiUrl("/api/v1/questions", "http://localhost")).toBe("http://localhost/api/v1/questions");
+      expect(buildApiUrl("/readyz", "http://localhost")).toBe("http://localhost/readyz");
+
+      // 3. Trailing slash on origin (e.g. Docker Compose or direct port)
+      expect(buildApiUrl("/api/v1/questions", "http://localhost:8000/")).toBe("http://localhost:8000/api/v1/questions");
+      expect(buildApiUrl("/readyz", "http://localhost:8000/")).toBe("http://localhost:8000/readyz");
+
+      // 4. Misconfigured base URL with /api/v1 (e.g. the previous P0 bug in Helm values)
+      expect(buildApiUrl("/api/v1/questions", "http://localhost/api/v1")).toBe("http://localhost/api/v1/questions");
+      expect(buildApiUrl("/readyz", "http://localhost/api/v1")).toBe("http://localhost/readyz");
+      expect(buildApiUrl("/api/v1/questions", "/api/v1")).toBe("/api/v1/questions");
+
+      // 5. Cloud Run production absolute URL
+      const prodApi = "https://devspeak-api-prod-echdk2yn-as.a.run.app";
+      expect(buildApiUrl("/api/v1/questions", prodApi)).toBe(
+        "https://devspeak-api-prod-echdk2yn-as.a.run.app/api/v1/questions"
+      );
+      expect(buildApiUrl("/api/v1/interviews/sessions", `${prodApi}/`)).toBe(
+        "https://devspeak-api-prod-echdk2yn-as.a.run.app/api/v1/interviews/sessions"
+      );
+      expect(buildApiUrl("/readyz", `${prodApi}/api/v1`)).toBe(
+        "https://devspeak-api-prod-echdk2yn-as.a.run.app/readyz"
+      );
+
+      // 6. Path without leading slash
+      expect(buildApiUrl("api/v1/questions", "http://localhost")).toBe("http://localhost/api/v1/questions");
+    });
+
+    it("respects window.__NEXT_PUBLIC_API_URL runtime injection in browser context", () => {
+      (window as unknown as { __NEXT_PUBLIC_API_URL?: string }).__NEXT_PUBLIC_API_URL = "http://localhost/api/v1";
+      expect(getApiBaseUrl()).toBe("http://localhost");
+
+      (window as unknown as { __NEXT_PUBLIC_API_URL?: string }).__NEXT_PUBLIC_API_URL = "";
+      expect(getApiBaseUrl()).toBe("");
+
+      (window as unknown as { __NEXT_PUBLIC_API_URL?: string }).__NEXT_PUBLIC_API_URL = "https://custom-api.run.app/";
+      expect(getApiBaseUrl()).toBe("https://custom-api.run.app");
+
+      delete (window as unknown as { __NEXT_PUBLIC_API_URL?: string }).__NEXT_PUBLIC_API_URL;
     });
   });
 });

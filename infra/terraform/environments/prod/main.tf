@@ -19,7 +19,7 @@ resource "google_service_account" "prod_deployer_sa" {
 resource "google_service_account_iam_member" "prod_wif_binding" {
   service_account_id = google_service_account.prod_deployer_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${split("/providers/", data.terraform_remote_state.shared.outputs.wif_provider_name)[0]}/attribute.repository/${var.github_repo}"
+  member             = "principal://iam.googleapis.com/${split("/providers/", data.terraform_remote_state.shared.outputs.wif_provider_name)[0]}/subject/repo:${var.github_repo}:ref:refs/heads/main"
 }
 
 # Allow Production Deployer to manage Cloud Run services & jobs

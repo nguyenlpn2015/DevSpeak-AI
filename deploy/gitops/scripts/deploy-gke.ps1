@@ -6,9 +6,28 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
-$env:Path = "D:\DEVSPEAK-AI\.bin;$env:Path;C:\Users\Nguyen\AppData\Local\Microsoft\WinGet\Links"
 
-$tfDir = "infra/terraform/environments/gke"
+# Portable repository root resolution from script location
+$ScriptDir = $PSScriptRoot
+$RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
+$LocalBin = Join-Path $RepoRoot ".bin"
+if (Test-Path $LocalBin) {
+    if ($env:PATH -notlike "*$LocalBin*") {
+        $env:PATH = "$LocalBin;$env:PATH"
+    }
+}
+
+function Assert-ToolInstalled {
+    param([string]$ToolName)
+    if (-not (Get-Command $ToolName -ErrorAction SilentlyContinue)) {
+        throw "Required tool '$ToolName' was not found in PATH. Please install or configure '$ToolName' to proceed."
+    }
+}
+
+Assert-ToolInstalled "terraform"
+Assert-ToolInstalled "kubectl"
+
+$tfDir = Join-Path $RepoRoot "infra\terraform\environments\gke"
 
 Write-Host "=== PROVISIONING EPHEMERAL GKE CLUSTER (TRACK B) ===" -ForegroundColor Cyan
 Push-Location $tfDir

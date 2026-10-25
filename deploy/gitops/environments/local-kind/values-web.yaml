@@ -11,8 +11,8 @@ env:
   PORT: "3000"
   HOSTNAME: "0.0.0.0"
   NEXT_TELEMETRY_DISABLED: "1"
-  # In kind, Ingress routes /api to the backend API, so browser calls /api/v1 directly on localhost
-  NEXT_PUBLIC_API_URL: "http://localhost/api/v1"
+  # In kind, Ingress routes /api/v1 to devspeak-api; browser calls http://localhost/api/v1
+  NEXT_PUBLIC_API_URL: "http://localhost"
 
 resources:
   requests:

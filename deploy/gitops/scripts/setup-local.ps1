@@ -6,10 +6,30 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
-$env:Path = "$env:Path;C:\Users\Nguyen\AppData\Local\Microsoft\WinGet\Links"
+
+# Portable repository root resolution from script location
+$ScriptDir = $PSScriptRoot
+$RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
+$LocalBin = Join-Path $RepoRoot ".bin"
+if (Test-Path $LocalBin) {
+    if ($env:PATH -notlike "*$LocalBin*") {
+        $env:PATH = "$LocalBin;$env:PATH"
+    }
+}
+
+function Assert-ToolInstalled {
+    param([string]$ToolName)
+    if (-not (Get-Command $ToolName -ErrorAction SilentlyContinue)) {
+        throw "Required tool '$ToolName' was not found in PATH. Please install or configure '$ToolName' to proceed."
+    }
+}
+
+Assert-ToolInstalled "kind"
+Assert-ToolInstalled "kubectl"
 
 $clusterName = "devspeak-local"
-$configFile = "deploy/gitops/environments/local-kind/kind-cluster-config.yaml"
+$configFile = Join-Path $RepoRoot "deploy\gitops\environments\local-kind\kind-cluster-config.yaml"
+$postgresManifest = Join-Path $RepoRoot "deploy\gitops\environments\local-kind\postgres-dev.yaml"
 
 if (-not $SkipClusterCreation) {
     $existing = kind get clusters
@@ -34,7 +54,7 @@ kubectl wait --namespace ingress-nginx `
   --timeout=120s
 
 Write-Host "`nDeploying Ephemeral PostgreSQL for Local Development..." -ForegroundColor Cyan
-kubectl apply -f deploy/gitops/environments/local-kind/postgres-dev.yaml
+kubectl apply -f $postgresManifest
 
 Write-Host "Waiting for postgres-dev to be ready..." -ForegroundColor Cyan
 kubectl wait --for=condition=available --timeout=60s deployment/postgres-dev

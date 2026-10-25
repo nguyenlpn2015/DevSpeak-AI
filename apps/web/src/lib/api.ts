@@ -13,14 +13,53 @@ import {
   ProgressSummary,
 } from "@/types";
 
+/**
+ * Normalizes an API base URL by:
+ * - Trimming whitespace
+ * - Stripping redundant trailing slashes
+ * - Stripping redundant or duplicate trailing /api/v1 segments
+ * Ensures that appending /api/v1/... never creates /api/v1/api/v1 or double slashes.
+ */
+export function normalizeApiBaseUrl(rawUrl?: string | null): string {
+  if (!rawUrl) return "";
+  let url = rawUrl.trim();
+  let previous: string;
+  do {
+    previous = url;
+    url = url.replace(/\/+$/, "");
+    if (url.endsWith("/api/v1")) {
+      url = url.slice(0, -7);
+    }
+  } while (url !== previous && url.length > 0);
+  return url.replace(/\/+$/, "");
+}
+
+/**
+ * Returns the effective API base URL from runtime injection (window.__NEXT_PUBLIC_API_URL)
+ * or environment variable (NEXT_PUBLIC_API_URL), normalized safely.
+ */
 export function getApiBaseUrl(): string {
+  let url: string | undefined;
   if (typeof window !== "undefined") {
     const runtimeUrl = (window as unknown as { __NEXT_PUBLIC_API_URL?: string }).__NEXT_PUBLIC_API_URL;
-    if (runtimeUrl) {
-      return runtimeUrl;
+    if (typeof runtimeUrl === "string") {
+      url = runtimeUrl;
     }
   }
-  return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  if (url === undefined) {
+    url = process.env.NEXT_PUBLIC_API_URL;
+  }
+  return normalizeApiBaseUrl(url !== undefined ? url : "http://127.0.0.1:8000");
+}
+
+/**
+ * Constructs a fully qualified or origin-relative API URL for a given path.
+ * Guarantees exactly one leading slash on path and no duplicate /api/v1.
+ */
+export function buildApiUrl(path: string, customBaseUrl?: string): string {
+  const base = customBaseUrl !== undefined ? normalizeApiBaseUrl(customBaseUrl) : getApiBaseUrl();
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return base ? `${base}${cleanPath}` : cleanPath;
 }
 
 let memoryToken: string | null = null;
@@ -65,41 +104,48 @@ export class ApiError extends Error {
   }
 }
 
-export async function checkBackendStatus(): Promise<{
+export async function checkBackendStatus(retries = 1): Promise<{
   isOnline: boolean;
   environment?: string;
   provider?: string;
   questionsLoaded?: number;
 }> {
-  try {
-    const res = await fetch(`${getApiBaseUrl()}/readyz`, {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-      signal: AbortSignal.timeout(2500),
-    });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(buildApiUrl("/readyz"), {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+        signal: AbortSignal.timeout(12000),
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        isOnline: true,
-        environment: "development",
-        provider: data.ai_provider || "mock",
-        questionsLoaded: data.questions_loaded,
-      };
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          isOnline: true,
+          environment: "development",
+          provider: data.ai_provider || "mock",
+          questionsLoaded: data.questions_loaded,
+        };
+      }
+    } catch {
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
     }
-  } catch {
-    // Backend probe failed
   }
 
   return { isOnline: false };
 }
 
-export async function getQuestions(params?: {
-  role?: string;
-  topic?: string;
-  difficulty?: string;
-}): Promise<QuestionListResponse> {
+export async function getQuestions(
+  params?: {
+    role?: string;
+    topic?: string;
+    difficulty?: string;
+  },
+  retries = 1
+): Promise<QuestionListResponse> {
   const query = new URLSearchParams();
   if (params?.role && params.role !== "all") query.set("role", params.role);
   if (params?.topic && params.topic !== "all") query.set("topic", params.topic);
@@ -107,45 +153,59 @@ export async function getQuestions(params?: {
     query.set("difficulty", params.difficulty);
 
   const qs = query.toString();
-  const url = `${getApiBaseUrl()}/api/v1/questions${qs ? `?${qs}` : ""}`;
+  const url = `${buildApiUrl("/api/v1/questions")}${qs ? `?${qs}` : ""}`;
 
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-      signal: AbortSignal.timeout(4000),
-    });
-  } catch {
-    throw new ApiError(
-      `Cannot connect to DevSpeak API at ${getApiBaseUrl()}. Ensure the backend service is running on port 8000.`,
-      0
-    );
-  }
-
-  if (!res.ok) {
-    let errMsg = `Failed to fetch questions (HTTP ${res.status})`;
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    let res: Response;
     try {
-      const errData = await res.json();
-      if (errData?.detail) {
-        errMsg =
-          typeof errData.detail === "string"
-            ? errData.detail
-            : JSON.stringify(errData.detail);
+      res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+        signal: AbortSignal.timeout(12000),
+      });
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, 250));
+        continue;
       }
-    } catch {
-      // ignore json parse error
+      throw new ApiError(
+        `Cannot connect to DevSpeak API at ${getApiBaseUrl() || "configured endpoint"}. Ensure the backend service is running on port 8000.`,
+        0
+      );
     }
-    throw new ApiError(errMsg, res.status);
+
+    if (!res.ok) {
+      let errMsg = `Failed to fetch questions (HTTP ${res.status})`;
+      try {
+        const errData = await res.json();
+        if (errData?.detail) {
+          errMsg =
+            typeof errData.detail === "string"
+              ? errData.detail
+              : JSON.stringify(errData.detail);
+        }
+      } catch {
+        // ignore json parse error
+      }
+      throw new ApiError(errMsg, res.status);
+    }
+
+    return await res.json();
   }
 
-  return await res.json();
+  throw new ApiError(
+    lastError?.message ||
+      `Cannot connect to DevSpeak API at ${getApiBaseUrl() || "configured endpoint"}. Ensure the backend service is running.`,
+    0
+  );
 }
 
 export async function getQuestionById(id: string): Promise<Question> {
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/questions/${encodeURIComponent(id)}`, {
+    res = await fetch(buildApiUrl(`/api/v1/questions/${encodeURIComponent(id)}`), {
       headers: { Accept: "application/json" },
       cache: "no-store",
       signal: AbortSignal.timeout(4000),
@@ -175,7 +235,7 @@ export async function submitEvaluation(
 ): Promise<FeedbackReport> {
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/interviews/evaluate`, {
+    res = await fetch(buildApiUrl("/api/v1/interviews/evaluate"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -191,7 +251,7 @@ export async function submitEvaluation(
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to evaluation engine at ${getApiBaseUrl()}. Ensure the backend service is running.`,
+      `Cannot connect to evaluation engine at ${getApiBaseUrl() || "configured endpoint"}. Ensure the backend service is running.`,
       0
     );
   }
@@ -221,7 +281,7 @@ export async function createSession(
 ): Promise<InterviewSession> {
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/interviews/sessions`, {
+    res = await fetch(buildApiUrl("/api/v1/interviews/sessions"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -235,7 +295,7 @@ export async function createSession(
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to DevSpeak API to create session at ${getApiBaseUrl()}.`,
+      `Cannot connect to DevSpeak API to create session at ${getApiBaseUrl() || "configured endpoint"}.`,
       0
     );
   }
@@ -257,7 +317,7 @@ export async function getSessionDetail(
   let res: Response;
   try {
     res = await fetch(
-      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}`,
+      buildApiUrl(`/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}`),
       {
         headers: getAuthHeaders(),
         cache: "no-store",
@@ -293,7 +353,7 @@ export async function listSessions(params?: {
   if (params?.offset) query.set("offset", String(params.offset));
 
   const qs = query.toString();
-  const url = `${getApiBaseUrl()}/api/v1/interviews/sessions${qs ? `?${qs}` : ""}`;
+  const url = `${buildApiUrl("/api/v1/interviews/sessions")}${qs ? `?${qs}` : ""}`;
 
   let res: Response;
   try {
@@ -304,7 +364,7 @@ export async function listSessions(params?: {
     });
   } catch {
     throw new ApiError(
-      `Cannot connect to DevSpeak API to list sessions at ${getApiBaseUrl()}.`,
+      `Cannot connect to DevSpeak API to list sessions at ${getApiBaseUrl() || "configured endpoint"}.`,
       0
     );
   }
@@ -323,7 +383,7 @@ export async function submitSessionAttempt(
   let res: Response;
   try {
     res = await fetch(
-      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/attempts`,
+      buildApiUrl(`/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/attempts`),
       {
         method: "POST",
         headers: {
@@ -336,7 +396,7 @@ export async function submitSessionAttempt(
     );
   } catch {
     throw new ApiError(
-      `Cannot connect to evaluation engine at ${getApiBaseUrl()}.`,
+      `Cannot connect to evaluation engine at ${getApiBaseUrl() || "configured endpoint"}.`,
       0
     );
   }
@@ -366,7 +426,7 @@ export async function getSessionMessages(
   let res: Response;
   try {
     res = await fetch(
-      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/messages`,
+      buildApiUrl(`/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/messages`),
       {
         headers: getAuthHeaders(),
         cache: "no-store",
@@ -398,7 +458,7 @@ export async function sendChatTurn(
   let res: Response;
   try {
     res = await fetch(
-      `${getApiBaseUrl()}/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/chat`,
+      buildApiUrl(`/api/v1/interviews/sessions/${encodeURIComponent(sessionId)}/chat`),
       {
         method: "POST",
         headers: {
@@ -411,7 +471,7 @@ export async function sendChatTurn(
     );
   } catch {
     throw new ApiError(
-      `Cannot connect to AI interviewer service at ${getApiBaseUrl()}.`,
+      `Cannot connect to AI interviewer service at ${getApiBaseUrl() || "configured endpoint"}.`,
       0
     );
   }
@@ -434,7 +494,7 @@ export async function sendChatTurn(
 export async function getProgressSummary(): Promise<ProgressSummary> {
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/progress/summary`, {
+    res = await fetch(buildApiUrl("/api/v1/progress/summary"), {
       headers: getAuthHeaders(),
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
@@ -462,7 +522,7 @@ export async function registerCandidate(payload: {
 }): Promise<TokenResponse> {
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/auth/register`, {
+    res = await fetch(buildApiUrl("/api/v1/auth/register"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -473,7 +533,7 @@ export async function registerCandidate(payload: {
       signal: AbortSignal.timeout(6000),
     });
   } catch {
-    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl()}.`, 0);
+    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl() || "configured endpoint"}.`, 0);
   }
 
   if (res.status === 409) {
@@ -500,7 +560,7 @@ export async function loginCandidate(payload: {
 }): Promise<TokenResponse> {
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/auth/login`, {
+    res = await fetch(buildApiUrl("/api/v1/auth/login"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -511,7 +571,7 @@ export async function loginCandidate(payload: {
       signal: AbortSignal.timeout(6000),
     });
   } catch {
-    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl()}.`, 0);
+    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl() || "configured endpoint"}.`, 0);
   }
 
   if (res.status === 401) {
@@ -535,13 +595,13 @@ export async function getCurrentUser(): Promise<User> {
 
   let res: Response;
   try {
-    res = await fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
+    res = await fetch(buildApiUrl("/api/v1/auth/me"), {
       headers: getAuthHeaders(),
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
     });
   } catch {
-    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl()}.`, 0);
+    throw new ApiError(`Cannot connect to auth service at ${getApiBaseUrl() || "configured endpoint"}.`, 0);
   }
 
   if (res.status === 401) {
@@ -560,7 +620,7 @@ export async function logoutCandidate(): Promise<void> {
   try {
     const token = getAuthToken();
     if (token) {
-      await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
+      await fetch(buildApiUrl("/api/v1/auth/logout"), {
         method: "POST",
         headers: getAuthHeaders(),
         signal: AbortSignal.timeout(3000),

@@ -18,7 +18,7 @@ env:
   HOSTNAME: "0.0.0.0"
   NEXT_TELEMETRY_DISABLED: "1"
   # Set to the GKE Ingress/Gateway external endpoint
-  NEXT_PUBLIC_API_URL: "/api/v1"
+  NEXT_PUBLIC_API_URL: ""
 
 resources:
   requests:

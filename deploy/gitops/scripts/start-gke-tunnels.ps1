@@ -9,8 +9,24 @@ Write-Host "==========================================================" -Foregro
 Write-Host "  DevSpeak AI — GKE Portfolio Tunnel Manager              " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# Set kubectl path
-$env:PATH = "D:\DEVSPEAK-AI\.bin;" + $env:PATH
+# Portable repository root resolution from script location
+$ScriptDir = $PSScriptRoot
+$RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
+$LocalBin = Join-Path $RepoRoot ".bin"
+if (Test-Path $LocalBin) {
+    if ($env:PATH -notlike "*$LocalBin*") {
+        $env:PATH = "$LocalBin;$env:PATH"
+    }
+}
+
+function Assert-ToolInstalled {
+    param([string]$ToolName)
+    if (-not (Get-Command $ToolName -ErrorAction SilentlyContinue)) {
+        throw "Required tool '$ToolName' was not found in PATH. Please install or configure '$ToolName' to proceed."
+    }
+}
+
+Assert-ToolInstalled "kubectl"
 
 # Switch context to GKE cluster
 Write-Host "[1/4] Switching kubectl context to GKE Autopilot..." -ForegroundColor Yellow
@@ -18,21 +34,24 @@ kubectl config use-context gke_project-12679df0-893b-4260-924_asia-southeast1_de
 
 Write-Host "[2/4] Starting port-forward for Argo CD Dashboard (Port 8080)..." -ForegroundColor Green
 $jobArgo = Start-Job -ScriptBlock {
-    $env:PATH = "D:\DEVSPEAK-AI\.bin;" + $env:PATH
+    param($bin)
+    if ($bin -and (Test-Path $bin)) { $env:PATH = "$bin;$env:PATH" }
     kubectl port-forward svc/argocd-server -n argocd 8080:443
-}
+} -ArgumentList $LocalBin
 
 Write-Host "[3/4] Starting port-forward for DevSpeak Web (Port 3002)..." -ForegroundColor Green
 $jobWeb = Start-Job -ScriptBlock {
-    $env:PATH = "D:\DEVSPEAK-AI\.bin;" + $env:PATH
+    param($bin)
+    if ($bin -and (Test-Path $bin)) { $env:PATH = "$bin;$env:PATH" }
     kubectl port-forward svc/devspeak-web-gke -n devspeak 3002:3000
-}
+} -ArgumentList $LocalBin
 
 Write-Host "[4/4] Starting port-forward for DevSpeak API (Port 8002)..." -ForegroundColor Green
 $jobApi = Start-Job -ScriptBlock {
-    $env:PATH = "D:\DEVSPEAK-AI\.bin;" + $env:PATH
+    param($bin)
+    if ($bin -and (Test-Path $bin)) { $env:PATH = "$bin;$env:PATH" }
     kubectl port-forward svc/devspeak-api-gke -n devspeak 8002:8000
-}
+} -ArgumentList $LocalBin
 
 Start-Sleep -Seconds 2
 
