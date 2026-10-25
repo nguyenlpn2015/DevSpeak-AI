@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
+      - dev
+  workflow_dispatch:
 
 # Least-privilege permissions: read-only access to repository contents
 permissions:

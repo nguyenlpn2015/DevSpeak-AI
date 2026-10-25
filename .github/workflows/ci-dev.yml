@@ -1,0 +1,225 @@
+name: DevSpeak AI - Development CI/CD (Local Stack & kind Validation)
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =========================================================================
+  # Job 1: Development Quality Gates & SAST
+  # =========================================================================
+  dev-quality:
+    name: Dev Quality Gates & SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret Leak Detection (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- Backend Checks ---
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: apps/api/requirements-dev.txt
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r apps/api/requirements-dev.txt
+
+      - name: Python Linting & Formatting Check (Ruff)
+        working-directory: apps/api
+        run: |
+          python -m ruff check .
+          python -m ruff format --check .
+
+      - name: Static Application Security Testing (Bandit SAST)
+        working-directory: apps/api
+        run: python -m bandit -r src
+
+      - name: Run Backend Tests (Pytest)
+        working-directory: apps/api
+        run: python -m pytest -v
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./ci_test.db"
+          AI_PROVIDER: "mock"
+          ENVIRONMENT: "development"
+
+      # --- Frontend Checks ---
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install Frontend dependencies (npm ci)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: TypeScript Type Check (tsc)
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Frontend Code Linting (ESLint)
+        working-directory: apps/web
+        run: npm run lint
+
+      - name: Frontend Unit & Journey Tests (Vitest)
+        working-directory: apps/web
+        run: npm test
+
+      - name: Frontend Build Validation
+        working-directory: apps/web
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: "http://localhost:8000"
+
+  # =========================================================================
+  # Job 2: Local Docker Compose Stack Validation
+  # =========================================================================
+  dev-docker-compose:
+    name: Local Docker Compose Stack Validation
+    needs: dev-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose config --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Local Backend Container
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile
+          push: false
+          tags: devspeak-api:dev-local
+
+      - name: Build Local Frontend Container
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          file: apps/web/Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:8000
+          tags: devspeak-web:dev-local
+
+  # =========================================================================
+  # Job 3: Local kind Kubernetes Cluster E2E Simulation
+  # =========================================================================
+  dev-kind-e2e:
+    name: Local kind Cluster Simulation & Ingress Validation
+    needs: dev-docker-compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm 3
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.16.4"
+
+      - name: Helm Chart Linting
+        run: |
+          helm lint deploy/gitops/charts/devspeak-api
+          helm lint deploy/gitops/charts/devspeak-web
+
+      - name: Create Disposable kind Cluster
+        uses: helm/kind-action@v1.12.0
+        with:
+          config: deploy/gitops/environments/local-kind/kind-cluster-config.yaml
+          cluster_name: devspeak-dev-test
+          wait: 120s
+
+      - name: Deploy Ingress-NGINX Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+          echo "Waiting for ingress-nginx controller to be ready..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=180s
+
+      - name: Deploy Local PostgreSQL Pod
+        run: |
+          kubectl apply -f deploy/gitops/environments/local-kind/postgres-dev.yaml
+          echo "Waiting for postgres-dev to be ready..."
+          kubectl wait --namespace default \
+            --for=condition=ready pod \
+            --selector=app=postgres-dev \
+            --timeout=120s
+
+      - name: Build and Load Docker Images into kind Cluster
+        run: |
+          docker build -t devspeak-api:dev apps/api
+          docker build --build-arg NEXT_PUBLIC_API_URL=http://localhost -t devspeak-web:dev apps/web
+          kind load docker-image devspeak-api:dev --name devspeak-dev-test
+          kind load docker-image devspeak-web:dev --name devspeak-dev-test
+
+      - name: Deploy Helm Charts with Local Kind Values
+        run: |
+          helm install devspeak-api deploy/gitops/charts/devspeak-api \
+            -f deploy/gitops/environments/local-kind/values-api.yaml \
+            --set image.repository=devspeak-api \
+            --set image.tag=dev \
+            --set image.pullPolicy=Never \
+            --namespace default
+
+          helm install devspeak-web deploy/gitops/charts/devspeak-web \
+            -f deploy/gitops/environments/local-kind/values-web.yaml \
+            --set image.repository=devspeak-web \
+            --set image.tag=dev \
+            --set image.pullPolicy=Never \
+            --namespace default
+
+          kubectl apply -f deploy/gitops/environments/local-kind/ingress-local.yaml
+
+      - name: Wait for Pods and Ingress Readiness
+        run: |
+          kubectl wait --namespace default --for=condition=ready pod --selector=app.kubernetes.io/name=devspeak-api --timeout=180s
+          kubectl wait --namespace default --for=condition=ready pod --selector=app.kubernetes.io/name=devspeak-web --timeout=180s
+
+      - name: Live Smoke Probes on Local Dev Stack
+        run: |
+          echo "[Dev CI] Probing API readiness at http://localhost/readyz..."
+          curl -fsSL --retry 10 --retry-delay 5 http://localhost/readyz | grep -q '"status":"ready"'
+          echo "-> Dev API readiness probe: PASSED"
+
+          echo "[Dev CI] Probing Question Catalog at http://localhost/api/v1/questions..."
+          curl -fsSL --retry 10 --retry-delay 5 http://localhost/api/v1/questions | grep -q '"total":26'
+          echo "-> Dev Question Catalog probe: PASSED (26 questions verified)"
+
+          echo "[Dev CI] Probing Web UI at http://localhost/..."
+          curl -fsSL --retry 10 --retry-delay 5 http://localhost/ | grep -qi 'DevSpeak'
+          echo "-> Dev Web UI probe: PASSED"
+          echo "[Dev CI] Local development stack validated successfully!"

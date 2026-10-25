@@ -10,11 +10,37 @@ DevSpeak AI enforces a strict separation between **Continuous Integration (Quali
 
 | Workflow File | Purpose | Trigger Conditions | Deployment Target | Authentication |
 | :--- | :--- | :--- | :--- | :--- |
-| **`.github/workflows/ci.yml`** | Universal CI, SAST, Linters, Unit Tests, Helm, Docker Build | Push to `main`, PR to `main` | None (Test Runner) | GitHub Token |
+| **`.github/workflows/ci.yml`** | Universal CI, SAST, Linters, Unit Tests, Helm, Docker Build | Push to `main`, `dev`; PR to `main`, `dev` | None (Test Runner) | GitHub Token |
+| **`.github/workflows/ci-dev.yml`** | Development CI/CD, Local Docker Stack & kind Simulation | Push to `dev`, PR to `dev`, Dispatch | Local Docker Stack & kind | GitHub Token |
 | **`.github/workflows/cd-staging.yml`** | Staging CD, Container Scan, Migration, Smoke Probes | Push to `staging`, PR to `staging`, Dispatch | Cloud Run Staging | WIF (`devspeak-ci-deployer-sa`) |
 | **`.github/workflows/cd-production.yml`** | Production CD, Decoupled Migration, 4-Gate Smoke Probes | Push to `main` (Branch-Locked), Dispatch | Cloud Run Production | WIF (`devspeak-prod-deployer-sa`) |
 | **`.github/workflows/gitops-ci.yml`** | GitOps Image Promotion, Manifest Tag Update | Push to `main` (`apps/**`, `deploy/**`), Dispatch | GKE Autopilot (Argo CD) | WIF (`devspeak-prod-deployer-sa`) |
-| **`.github/workflows/kind-ci.yml`** | Disposable kind Cluster E2E Helm Deployment Test | Push/PR to `main` (`deploy/**`, `apps/**`), Dispatch | Disposable kind Cluster | GitHub Token |
+| **`.github/workflows/kind-ci.yml`** | Disposable kind Cluster E2E Helm Deployment Test | Push/PR to `main`, `dev` (`deploy/**`, `apps/**`), Dispatch | Disposable kind Cluster | GitHub Token |
+
+---
+
+## 3. Git Branching Strategy & Environment Mapping
+
+DevSpeak AI enforces a strict 3-tier branch-to-environment topology:
+
+```
+[ Feature / Bugfix Branches ]
+             │ (PR)
+             ▼
+      [ 'dev' Branch ] ──────────> CI/CD for Local Development
+                                   • Local Docker Compose validation
+                                   • Local kind cluster simulation & Ingress
+             │ (PR)
+             ▼
+    [ 'staging' Branch ] ────────> CD for Cloud Run Staging
+                                   • Pre-release verification & integration testing
+                                   • Deterministic mock AI provider
+             │ (PR / Release)
+             ▼
+     [ 'main' Branch ] ──────────> CD for Production Environments
+                                   • Track A: Cloud Run Production (Branch-locked WIF)
+                                   • Track B: GKE Autopilot GitOps (Argo CD continuous reconciliation)
+```
 
 ---
 
