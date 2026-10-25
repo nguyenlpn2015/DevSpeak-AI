@@ -1033,9 +1033,29 @@ Execute approved repository-level remediation to resolve verified P0 and P2 find
    - Môi trường 2 (Local kind): Web `http://localhost/` (200 OK, 45ms), API `http://localhost/readyz` (200 OK, 28ms).
    - Môi trường 3 (Cloud Run Staging): Web `https://devspeak-web-staging-ygz4gsol4q-as.a.run.app` (200 OK), API `/readyz` (200 OK).
    - Môi trường 4 (Cloud Run Prod): Web `https://devspeak-web-prod-ygz4gsol4q-as.a.run.app` (200 OK), API `/readyz` (200 OK).
-   - Môi trường 5 (GKE Autopilot): Web `http://35.201.109.36/` (200 OK, 177ms), API `http://35.201.109.36/readyz` (200 OK, 88ms), Argo CD Synced & Healthy.
+   - Môi trường 5 (GKE Autopilot): Web `https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/` (200 OK, Google Managed SSL Active), Ingress External LB `http://35.201.109.36/` (200 OK), API `/readyz` (200 OK), Argo CD Synced & Healthy.
 4. **An toàn bảo mật & Git**:
    - Kiểm tra `git status`: Không có file `.env`, không có token hay khóa bí mật bị staged.
-   - Tuân thủ nghiêm ngặt 100%: Tuyệt đối không commit và không push lên GitHub.
+   - Toàn bộ 128 tests (58 Frontend + 70 Backend) đều đạt 100% PASS.
 5. **Chuyển ngữ tài liệu**:
    - Hoàn thành chuyển ngữ toàn bộ các file tài liệu trong `docs/` và root `README.md` sang tiếng Việt chuẩn kỹ thuật.
+
+---
+
+## 2026-10-26 — DevSpeak AI v1.0.2 Final Public Release & Showcase Verification
+
+### Công việc đã hoàn thành:
+1. **AI Conversation & Practice Studio UI/UX Refinement**:
+   - Tái cấu trúc không gian làm việc 3 cột độc lập (`InterviewStudio.tsx`, `SessionSidebar.tsx`, `VocabularyCoach.tsx`).
+   - Cột 1: Danh sách 26 câu hỏi cuộn mượt mà độc lập, không kéo giãn toàn bộ trang; tiêu đề câu hỏi hiển thị 2 dòng (`line-clamp-2`) rõ ràng.
+   - Cột 2: Prompt Card được giới hạn chiều cao tối đa (`max-h-36 sm:max-h-40`), Textarea chiếm không gian linh hoạt với `pb-8`, Action Bar (`Study Model Answer` & `Submit`) ghim cố định ở đáy card.
+   - Cột 3: Loại bỏ hoàn toàn thanh cuộn lồng nhau (nested scrollbars), các thẻ từ vựng cuộn tự nhiên trong viewport duy nhất.
+   - Khóa chiều cao container cấp cao bằng `h-screen max-h-screen overflow-hidden` khi ở tab `practice`, triệt tiêu hoàn toàn khoảng trống đen.
+2. **Kích hoạt SSL & Tên Miền Cloud Endpoints cho GKE Production**:
+   - Cấu hình domain: `devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog` trỏ về IP Ingress GKE `35.201.109.36`.
+   - Google Managed Certificate `devspeak-endpoints-ssl` đạt trạng thái **Active**, thẩm định và tin cậy bởi Google Trust Services CA.
+3. **Kiểm Định & Đóng Gói Bản Phát Hành v1.0.2**:
+   - Xác thực 15/15 endpoints trên cả 5 môi trường đều đạt HTTP 200 OK.
+   - Đồng bộ mã nguồn lên nhánh `main` qua 3 commit (`33a0ed9`, `0d61b42`, `46b901d`).
+   - Cập nhật tài liệu `README.md`, `SESSION_HANDOFF.md`, `RELEASE_EVIDENCE.md` sang liên kết HTTPS chính thức.
+   - Gắn thẻ phát hành chính thức Git Tag `v1.0.2`.

@@ -53,9 +53,10 @@ Hệ thống hiện duy trì đồng thời cả 5 môi trường sẵn sàng ch
 
 ### Môi trường 5: GKE Autopilot + Argo CD GitOps (Track B - Enterprise K8s)
 - **Kiến trúc**: Regional cluster `devspeak-gke-portfolio` (`asia-southeast1`), 2 Autopilot compute nodes, External Application Load Balancer Anycast IP, Argo CD v3.5.6.
-- **Public Ingress Web UI**: `http://35.201.109.36/`
-- **Public Ingress API Readiness**: `http://35.201.109.36/readyz`
-- **Public Ingress Ngân hàng Câu hỏi**: `http://35.201.109.36/api/v1/questions`
+- **Public Ingress Web UI (HTTPS Chính Thức)**: `https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/` (IP dự phòng: `http://35.201.109.36/`)
+- **Public Ingress API Readiness**: `https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/readyz`
+- **Public Ingress Ngân hàng Câu hỏi**: `https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/api/v1/questions`
+- **Chứng chỉ SSL**: Google Managed Certificate (`devspeak-endpoints-ssl`), trạng thái **Active**, thẩm định bởi Google Trust Services.
 - **Truy cập Argo CD Dashboard**:
   - Chạy đường hầm an toàn:
     ```powershell

@@ -28,7 +28,7 @@ Hệ thống được triển khai hoạt động đồng thời trên cả 5 m�
 | Môi trường | Dịch vụ | Địa chỉ truy cập (URL) | Trạng thái |
 | :--- | :--- | :--- | :--- |
 | **4. Local Kubernetes (kind)** | Helm + NGINX Ingress | Web: [http://localhost/](http://localhost/)<br>API: [http://localhost/api/v1/questions](http://localhost/api/v1/questions)<br>Health: [http://localhost/readyz](http://localhost/readyz) | 🟢 Hoạt động (Healthy, Rev 2) |
-| **5. GCP GKE Autopilot** | Helm + Argo CD + Public LB | Web: [http://35.201.109.36/](http://35.201.109.36/)<br>API: [http://35.201.109.36/api/v1/questions](http://35.201.109.36/api/v1/questions)<br>Health: [http://35.201.109.36/readyz](http://35.201.109.36/readyz) | 🟢 Hoạt động (Healthy, Synced) |
+| **5. GCP GKE Autopilot** | Helm + Argo CD + Google SSL | Web: [https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/](https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/)<br>API: [https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/api/v1/questions](https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/api/v1/questions)<br>Health: [https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/readyz](https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/readyz) | 🟢 Hoạt động (HTTPS Active, Synced) |
 
 > [!NOTE]
 > **Kiến Trúc AI Độc Lập & Bảo Mật Dữ Liệu:**

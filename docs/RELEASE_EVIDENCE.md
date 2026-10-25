@@ -1,7 +1,7 @@
 # Bằng Chứng Phát Hành & Kiểm Định Chất Lượng (Release Evidence): DevSpeak AI
 
-**Phiên bản phát hành**: v1.0.2-candidate  
-**Ngày phát hành**: 25/10/2026  
+**Phiên bản phát hành**: v1.0.2  
+**Ngày phát hành**: 26/10/2026  
 **Chuyên gia thẩm định**: Principal DevSecOps Engineer & Cloud Platform Architect  
 **Trạng thái kiểm định**: 🟢 **ĐÃ XÁC THỰC TRỰC TIẾP TRÊN CẢ 5 MÔI TRƯỜNG**
 
@@ -11,11 +11,11 @@
 
 | Môi trường | Lộ trình | URL truy cập kiểm định | Mã trạng thái | Thời gian phản hồi | Kết quả kiểm tra dữ liệu |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Docker Compose** | Track A (Local) | `http://localhost:3001` (Web)<br>`http://localhost:8000/readyz` (API) | **200 OK**<br>**200 OK** | 123 ms<br>39 ms | 🟢 3/3 container healthy, tải 26 câu hỏi |
-| **2. Local kind (K8s)** | Track B (Local) | `http://localhost/` (Web)<br>`http://localhost/readyz` (API) | **200 OK**<br>**200 OK** | 45 ms<br>28 ms | 🟢 Revision 2: Bản vá v1.0.2 đã nạp, sửa lỗi tiền tố `/api/v1` |
-| **3. Cloud Run Staging**| Track A (GCP) | `https://devspeak-web-staging-ygz4gsol4q-as.a.run.app`<br>`https://devspeak-api-staging-ygz4gsol4q-as.a.run.app/readyz` | **200 OK**<br>**200 OK** | 3.8 s<br>7.1 s | 🟢 Khởi động lạnh an toàn, kết nối CSDL tốt |
-| **4. Cloud Run Prod** | Track A (GCP) | `https://devspeak-web-prod-ygz4gsol4q-as.a.run.app`<br>`https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/readyz` | **200 OK**<br>**200 OK** | 2.8 s<br>9.2 s | 🟢 Đang phục vụ trực tiếp tại Singapore |
-| **5. GKE Autopilot** | Track B (GCP) | `http://35.201.109.36/` (Web)<br>`http://35.201.109.36/readyz` (API) | **200 OK**<br>**200 OK** | 177 ms<br>88 ms | 🟢 Argo CD Synced, Ingress External LB hoạt động |
+| **1. Docker Compose** | Track A (Local) | `http://localhost:3001` (Web)<br>`http://localhost:8000/readyz` (API) | **200 OK**<br>**200 OK** | 73 ms<br>7.6 ms | 🟢 3/3 container healthy, tải 26 câu hỏi |
+| **2. Local kind (K8s)** | Track B (Local) | `http://localhost/` (Web)<br>`http://localhost/readyz` (API) | **200 OK**<br>**200 OK** | 2055 ms<br>2051 ms | 🟢 Ingress Controller routing chuẩn, sửa lỗi tiền tố `/api/v1` |
+| **3. Cloud Run Staging**| Track A (GCP) | `https://devspeak-web-staging-ygz4gsol4q-as.a.run.app`<br>`https://devspeak-api-staging-ygz4gsol4q-as.a.run.app/readyz` | **200 OK**<br>**200 OK** | 550 ms<br>407 ms | 🟢 TLS Validated, kết nối CSDL tốt |
+| **4. Cloud Run Prod** | Track A (GCP) | `https://devspeak-web-prod-ygz4gsol4q-as.a.run.app`<br>`https://devspeak-api-prod-ygz4gsol4q-as.a.run.app/readyz` | **200 OK**<br>**200 OK** | 399 ms<br>338 ms | 🟢 Đang phục vụ trực tiếp tại Singapore |
+| **5. GKE Autopilot** | Track B (GCP) | `https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/` (Web)<br>`https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/readyz` (API) | **200 OK**<br>**200 OK** | 594 ms<br>298 ms | 🟢 Google Managed SSL Active, Ingress External LB hoạt động |
 
 ---
 
