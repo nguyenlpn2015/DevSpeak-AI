@@ -29,7 +29,6 @@ services:
       - no-new-privileges:true
 
   api:
-    image: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-api:563f64500189334becb0136036588b13caa00194
     build:
       context: ./apps/api
       dockerfile: Dockerfile
@@ -53,7 +52,6 @@ services:
       - no-new-privileges:true
 
   web:
-    image: asia-southeast1-docker.pkg.dev/project-12679df0-893b-4260-924/devspeak-docker/devspeak-web:563f64500189334becb0136036588b13caa00194
     build:
       context: ./apps/web
       dockerfile: Dockerfile
