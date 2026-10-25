@@ -1,0 +1,118 @@
+name: DevSpeak AI - Local Kubernetes (kind) CI Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "deploy/gitops/**"
+      - "apps/**"
+      - ".github/workflows/kind-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "deploy/gitops/**"
+      - "apps/**"
+      - ".github/workflows/kind-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kind-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kind-validation:
+    name: Disposable kind Cluster & Helm Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm 3
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.16.4"
+
+      - name: Create Disposable kind Cluster
+        uses: helm/kind-action@v1.12.0
+        with:
+          cluster_name: devspeak-ci
+          config: deploy/gitops/environments/local-kind/kind-cluster-config.yaml
+          wait: 120s
+
+      - name: Verify Cluster Health
+        run: |
+          kubectl cluster-info
+          kubectl get nodes -o wide
+
+      - name: Deploy Ingress-NGINX for kind
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=180s
+
+      - name: Deploy Ephemeral PostgreSQL for Testing
+        run: |
+          kubectl apply -f deploy/gitops/environments/local-kind/postgres-dev.yaml
+          kubectl wait --for=condition=available --timeout=90s deployment/postgres-dev
+
+      - name: Build Local Container Images for kind
+        run: |
+          docker build -t devspeak-api:kind-ci apps/api
+          docker build -t devspeak-web:kind-ci --build-arg NEXT_PUBLIC_API_URL=http://localhost/ apps/web
+          kind load docker-image devspeak-api:kind-ci --name devspeak-ci
+          kind load docker-image devspeak-web:kind-ci --name devspeak-ci
+
+      - name: Deploy Helm Charts (API & Web)
+        run: |
+          helm install devspeak-api deploy/gitops/charts/devspeak-api \
+            -f deploy/gitops/environments/local-kind/values-api.yaml \
+            --set image.repository=devspeak-api \
+            --set image.tag=kind-ci \
+            --set image.pullPolicy=Never \
+            --wait --timeout=180s
+
+          helm install devspeak-web deploy/gitops/charts/devspeak-web \
+            -f deploy/gitops/environments/local-kind/values-web.yaml \
+            --set image.repository=devspeak-web \
+            --set image.tag=kind-ci \
+            --set image.pullPolicy=Never \
+            --wait --timeout=180s
+
+      - name: Deploy Ingress Routing
+        run: |
+          kubectl apply -f deploy/gitops/environments/local-kind/ingress-local.yaml
+          sleep 10
+
+      - name: Execute Local Smoke Verification
+        run: |
+          echo "Inspecting deployed pods and services..."
+          kubectl get pods,svc,ingress -o wide
+
+          echo "Probing readiness endpoint via Ingress..."
+          for i in {1..12}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/readyz || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Readiness probe passed: HTTP 200 OK"
+              break
+            fi
+            echo "Waiting for ingress route readiness... (attempt $i/12, status: $STATUS)"
+            sleep 5
+          done
+
+          echo "Verifying Question Catalog API response..."
+          CATALOG_COUNT=$(curl -s http://localhost/api/v1/questions | grep -o '"total":26' || echo "")
+          if [ -n "$CATALOG_COUNT" ]; then
+            echo "✅ Question Catalog verified: 26 questions loaded successfully!"
+          else
+            echo "❌ Question Catalog verification failed"
+            curl -sv http://localhost/api/v1/questions
+            exit 1
+          fi

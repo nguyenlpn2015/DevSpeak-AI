@@ -1,5 +1,9 @@
 # Operations & Local Setup Guide: DevSpeak AI
 
+> [!TIP]
+> **Production Operations Handbook**:
+> For the comprehensive production operations manual covering CI/CD, 5-environment deployments, instant rollbacks, monitoring, incident response, disaster recovery, and FinOps, see the **[Production Operations Handbook (15 Modular Runbooks)](./operations/README.md)**.
+
 This document provides step-by-step instructions for running, testing, and operating DevSpeak AI locally and in automated environments.
 
 ---

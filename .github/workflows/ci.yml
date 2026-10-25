@@ -18,16 +18,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ==========================================
+  # =========================================================================
   # Job 1: Secret Leak Detection (Gitleaks)
-  # ==========================================
+  # =========================================================================
   secret-scan:
     name: Secret Leak Detection
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout code with full Git history
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -36,9 +36,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ==========================================
+  # =========================================================================
   # Job 2: Backend Quality & DevSecOps Gates
-  # ==========================================
+  # =========================================================================
   backend-quality:
     name: Backend CI & SAST (Python 3.12)
     runs-on: ubuntu-latest
@@ -48,10 +48,10 @@ jobs:
         working-directory: apps/api
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
@@ -89,9 +89,9 @@ jobs:
           AI_PROVIDER: "mock"
           ENVIRONMENT: "test"
 
-  # ==========================================
+  # =========================================================================
   # Job 3: Frontend Quality & Build Gates
-  # ==========================================
+  # =========================================================================
   frontend-quality:
     name: Frontend CI & Production Build (Node.js 24)
     runs-on: ubuntu-latest
@@ -101,10 +101,10 @@ jobs:
         working-directory: apps/web
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: "npm"
@@ -127,3 +127,92 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000"
 
+  # =========================================================================
+  # Job 4: Infrastructure as Code & Helm Chart Quality Gates
+  # =========================================================================
+  infra-quality:
+    name: IaC & Helm Validation (Terraform & Helm 3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive infra/terraform
+
+      - name: Set up Helm 3
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.16.4"
+
+      - name: Helm Chart Linting (API & Web)
+        run: |
+          helm lint deploy/gitops/charts/devspeak-api
+          helm lint deploy/gitops/charts/devspeak-web
+
+      - name: Helm Template Validation (local-kind values)
+        run: |
+          helm template devspeak-api deploy/gitops/charts/devspeak-api -f deploy/gitops/environments/local-kind/values-api.yaml > /dev/null
+          helm template devspeak-web deploy/gitops/charts/devspeak-web -f deploy/gitops/environments/local-kind/values-web.yaml > /dev/null
+
+      - name: Helm Template Validation (gke-portfolio values)
+        run: |
+          helm template devspeak-api deploy/gitops/charts/devspeak-api -f deploy/gitops/environments/gke-portfolio/values-api.yaml > /dev/null
+          helm template devspeak-web deploy/gitops/charts/devspeak-web -f deploy/gitops/environments/gke-portfolio/values-web.yaml > /dev/null
+
+  # =========================================================================
+  # Job 5: Container Build Integrity Validation
+  # =========================================================================
+  container-build-test:
+    name: Container Build Integrity (Docker Buildx)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Dockerfile (Validation Only, No Push)
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile
+          push: false
+          tags: devspeak-api:test
+
+      - name: Build Frontend Dockerfile (Validation Only, No Push)
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          file: apps/web/Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:8000
+          tags: devspeak-web:test
+
+  # =========================================================================
+  # Job 6: Documentation & Link Integrity
+  # =========================================================================
+  docs-quality:
+    name: Documentation Link Integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Relative Link & Anchor Validator
+        run: python scripts/verify-markdown-links.py

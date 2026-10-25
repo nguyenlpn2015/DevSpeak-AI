@@ -215,6 +215,7 @@ docker compose down
 
 All in-depth technical specifications, architecture decisions, and runbooks are available in the [`docs/`](./docs/) directory:
 
+- 🚀 **[Production Operations Handbook (15 Modular Runbooks)](./docs/operations/README.md)**: Full SRE & DevOps operational manual covering CI/CD, 5-environment deployments, instant rollbacks, monitoring, incident response, disaster recovery, and FinOps.
 - 📘 **[Candidate User Guide](./docs/USER_GUIDE.md)**: Candidate manual covering question browsing, 3-zone studio practice, voice mode, and interpreting AI reports.
 - 🛠️ **[Developer Operations & Setup Runbook](./docs/OPERATIONS.md)**: Step-by-step developer guide for local Docker Compose, Kubernetes kind cluster, and environment configuration.
 - 📐 **[System Architecture & Data Flows](./docs/ARCHITECTURE.md)**: Monorepo layout, AsyncIO architecture, database schema, and API boundaries.
