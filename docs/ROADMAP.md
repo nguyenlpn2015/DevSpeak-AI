@@ -1,75 +1,131 @@
-# Lộ Trình Phát Triển Sản Phẩm (Product Roadmap): DevSpeak AI
+# Development Roadmap: DevSpeak AI
 
-Tài liệu này xác định các cột mốc kỹ thuật của DevSpeak AI từ giai đoạn kiến tạo nền tảng đến khi trở thành một giải pháp phần mềm hoàn chỉnh và một hệ thống chuẩn mực DevSecOps / Cloud Platform trên Google Cloud Platform.
-
----
-
-## 🏁 Cột Mốc 0: Khởi Tạo Nền Tảng & Rà Soát Môi Trường (Milestone 0)
-- **Mục tiêu**: Rà soát hệ thống, thiết lập tiêu chuẩn kiến trúc Monorepo, xây dựng hệ thống tài liệu sống và quản lý bảo mật Git.
-- **Trạng thái**: 🟢 **HOÀN THÀNH (COMPLETED)**
-- **Kết quả đạt được**:
-  - [x] Thiết lập cấu trúc Monorepo chuẩn mực (`apps/web`, `apps/api`, `deploy/gitops`, `infra/terraform`, `docs/`).
-  - [x] Quy chuẩn bảo mật `.gitignore` loại trừ hoàn toàn các file bí mật (`.env*`, `*.db`, credentials).
-  - [x] Xây dựng bộ tài liệu kỹ thuật toàn diện bằng tiếng Việt và ghi nhận quyết định kiến trúc ADR-0001.
+This roadmap defines the engineering progression of DevSpeak AI from initial discovery to an enterprise-grade DevOps/DevSecOps portfolio and real software product. Every milestone requires verified evidence before being marked complete.
 
 ---
 
-## 🚀 Cột Mốc 1: Ứng Dụng Khả Dụng Cốt Lõi (Milestone 1 MVP)
-- **Mục tiêu**: Xây dựng ứng dụng web hoạt động hoàn chỉnh từ đầu đến cuối, cho phép kỹ sư IT luyện phỏng vấn và nhận đánh giá từ AI.
-- **Trạng thái**: 🟢 **HOÀN THÀNH (COMPLETED)**
-- **Kết quả đạt được**:
-  - [x] **Backend API FastAPI**: Hỗ trợ đầy đủ endpoint `/healthz`, `/readyz`, quản lý câu hỏi `/api/v1/questions` và phiên làm việc `/api/v1/interviews/sessions`.
-  - [x] **Ngân Hàng 26 Câu Hỏi Chuẩn IT/DevOps**: Bao quát Kubernetes, CI/CD, Linux SRE, AWS Cloud, Docker và hành vi STAR.
-  - [x] **Cơ Chế Đánh Giá Kép (Dual AI Provider)**:
-    - *Deterministic Mock*: Chạy ngoại tuyến, chi phí 0đ, đánh giá dựa trên từ khóa, cấu trúc STAR và số lượng từ.
-    - *Google Gemini 2.0 Flash*: Đánh giá AI tạo sinh với Schema JSON nguyên bản và cô lập thẻ XML chống Prompt Injection.
-  - [x] **Lưu Trữ Dữ Liệu Bền Vững**: Tích hợp SQLAlchemy 2.0 AsyncIO và cơ chế quản lý migration Alembic.
-  - [x] **Giao Diện Frontend Next.js 15**: Tích hợp LinguaFlow Dark-Neon, bộ chuyển đổi ngôn ngữ song ngữ Anh - Việt, chế độ nhập liệu bằng giọng nói (Web Speech API).
+## Milestone 0: Discovery & Repository Foundation
+- **Goal**: Audit development environment, establish architectural standards, create persistent documentation, and set up safe monorepo structure.
+- **Status**: **IN PROGRESS**
+- **Acceptance Criteria**:
+  - [x] Comprehensive workspace and environment audit conducted without unreviewed commands.
+  - [x] Initialized Git repository with strict `.gitignore` preventing secret leaks.
+  - [x] Created context documents: `GEMINI.md`, `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, `docs/SECURITY.md`, `docs/OPERATIONS.md`, `docs/WORKLOG.md`, `docs/KNOWN_ISSUES.md`, `docs/SESSION_HANDOFF.md`.
+  - [x] Initial Architecture Decision Record (ADR-0001) recorded.
+  - [ ] Environment prerequisites clarified (Python installation, local DB strategy).
+- **Deliverables**: Verified documentation system, clean baseline commit.
 
 ---
 
-## 🛡️ Cột Mốc 2: Tự Động Hóa CI/CD & Đóng Gói Container (Milestone 2)
-- **Mục tiêu**: Xây dựng quy trình tích hợp liên tục (CI), kiểm soát chất lượng tự động, rà soát bảo mật DevSecOps và đóng gói container.
-- **Trạng thái**: 🟢 **HOÀN THÀNH (COMPLETED)**
-- **Kết quả đạt được**:
-  - [x] Pipeline GitHub Actions kiểm định chất lượng: Linting (`ruff`, `eslint`), kiểm tra kiểu (`tsc`), kiểm thử tự động (`pytest` 70 bài, `vitest` 58 bài).
-  - [x] Quét bảo mật tự động: SAST (`bandit` 0 lỗi), kiểm tra thư viện (`pip-audit`, `npm audit`), quét rò rỉ bí mật (`gitleaks`).
-  - [x] Đóng gói Docker đa tầng (Multi-stage build) chạy dưới tài khoản non-root (`appuser:10001`, `nextjs:1001`).
-  - [x] Điều phối ngăn xếp hoàn chỉnh bằng Docker Compose (Web: 3001, API: 8000, DB: 5432).
+## Milestone 1: Working MVP (Core Learning Loop)
+- **Goal**: Build an end-to-end working web application where an IT professional can practice answering DevOps/IT interview questions and receive structured AI and non-AI feedback.
+- **Status**: **IN PROGRESS**
+- **Acceptance Criteria**:
+  - [x] **Deterministic AI Mock Provider**: Unit and integration test suite runnable in CI without external API keys or cost (26 tests passing in 0.5s).
+  - [x] **Backend API Foundation (FastAPI)**:
+    - `GET /healthz` (liveness).
+    - `GET /readyz` (readiness).
+    - `GET /api/v1/questions` (filtering by role, difficulty, topic).
+    - `GET /api/v1/questions/{id}` (detail with rubric and sample answer).
+    - `POST /api/v1/interviews/evaluate` (deterministic mock evaluation).
+  - [x] **AI Evaluation Engine (Mock)**: Generates scores (1-10) and targeted feedback for Grammar, Technical Precision, and Communication Structure (STAR), with heuristic mock disclaimer.
+  - [x] **Question Bank Foundation**: 6 production-grade questions covering Kubernetes, CI/CD canary rollback, AWS multi-AZ cost optimization, Linux iowait, STAR behavioral, and Docker multi-stage builds.
+  - [x] **Automated Tests**: Unit tests for schemas and feedback logic; API integration tests with mock provider (26/26 passing).
+  - [x] **Database Persistence & Session History**:
+    - SQLAlchemy 2.x async ORM with `InterviewSession` and `InterviewAttempt` models.
+    - Alembic migrations (`0001_initial_interview_persistence.py`).
+    - Session endpoints: `POST /api/v1/interviews/sessions`, `GET /api/v1/interviews/sessions`, `GET /api/v1/interviews/sessions/{id}`, `POST /api/v1/interviews/sessions/{id}/attempts`.
+    - Cross-restart persistence verified across Uvicorn process restarts.
+  - [x] **Live AI Provider Integration (Google Gemini)**:
+    - `GeminiAIProvider` adapter implementing `AIProviderInterface` via `httpx.AsyncClient`.
+    - Native Structured Outputs using `responseSchema` enforcing `FeedbackReport` contract.
+    - Strict prompt injection containment inside `<candidate_response>` XML blocks with system non-override directives.
+    - Resilience: exponential backoff retries on transient errors and gateway timeout protections.
+    - Error masking: custom HTTP status mappings (429, 502, 503, 504) without stack trace or key leaks.
+    - Offline safety: `AI_PROVIDER=mock` remains default; all tests execute 100% offline.
+  - [x] **Web Interface (Next.js 15)**: Clean, accessible, responsive UI with question selector, live character/word counters, evaluation rubric, real-time feedback presentation, benchmark model answers, and follow-up probes.
+  - [x] **Bilingual Internationalization (i18n)**: English/Vietnamese language switcher with local storage persistence, SSR hydration safety, and strict preservation of technical English commands and prompts.
+  - [ ] **Question Bank Expansion**: Expand to 30+ categorized IT questions (scheduled for incremental content expansion).
+- **Verification Evidence**: Automated test suite (`pytest` 50/50 passing 100%), Vitest test report (`vitest` 28/28 passing 100%), live cross-restart HTTP persistence verified, `npm run build` and `npm run type-check` passing with zero errors.
 
 ---
 
-## ☁️ Cột Mốc 3: Hạ Tầng Đám Mây GCP & Serverless (Milestone 3 — Track A)
-- **Mục tiêu**: Triển khai kiến trúc Serverless trên Google Cloud Platform với Cloud Run và Cloud SQL, quản lý bằng Terraform.
-- **Trạng thái**: 🟢 **HOÀN THÀNH (COMPLETED)**
-- **Kết quả đạt được**:
-  - [x] Khởi tạo hạ tầng bằng Terraform cho môi trường Staging và Production.
-  - [x] Xác thực Keyless qua Workload Identity Federation (WIF) chỉ gắn với nhánh `main`.
-  - [x] Tách biệt tác vụ Database Migration (Cloud Run Job chạy `--wait` trước khi triển khai dịch vụ Web/API).
-  - [x] Cloud SQL PostgreSQL 16 cấu hình sao lưu tự động và phục hồi theo thời gian (PITR 7 ngày).
-  - [x] Kiểm định thực tế 2 môi trường trực tiếp: Cloud Run Staging và Cloud Run Production.
+## Milestone 2: Secure Delivery & Continuous Integration
+- **Goal**: Establish continuous integration, automated quality gates, security scanning, and containerized packaging.
+- **Status**: **IN PROGRESS**
+- **Acceptance Criteria**:
+  - [x] GitHub Actions workflow running on pull requests (`.github/workflows/ci.yml`).
+  - [x] Python linting & formatting (`ruff check`, `ruff format`).
+  - [x] Frontend linting & type checks (`eslint`, `tsc`).
+  - [x] Dependency vulnerability scanning (`pip-audit`, `npm audit`).
+  - [x] SAST scanning (`bandit -r src` - 0 issues).
+  - [x] Secret leak detection (`gitleaks` in CI).
+  - [x] Zero-cost offline test suite enforcement in CI.
+  - [x] Multi-stage Dockerfiles for backend and frontend (`apps/api/Dockerfile`, `apps/web/Dockerfile`).
+  - [x] Docker Compose orchestration for local multi-container development (`docker-compose.yml`).
+  - [x] Non-root execution (`appuser:10001`, `nextjs:1001`) and minimal attack surface base images.
+  - [ ] Container image build & scanning in CI (`trivy` with zero critical vulnerabilities).
+- **Verification Evidence**: Validated Dockerfiles, PyYAML syntax verified for `docker-compose.yml`, zero-dependency stdlib healthchecks.
 
 ---
 
-## ☸️ Cột Mốc 4: Nền Tảng Kubernetes & Vận Hành GitOps (Milestone 4 — Track B)
-- **Mục tiêu**: Đóng gói ứng dụng dạng Helm Chart, triển khai trên cụm Kubernetes cục bộ (kind) và đám mây (GKE Autopilot) qua Argo CD.
-- **Trạng thái**: 🟢 **HOÀN THÀNH (COMPLETED)**
-- **Kết quả đạt được**:
-  - [x] Helm Chart tham số hóa hoàn chỉnh cho Web và API với khả năng tự động tiêm cấu hình API qua ConfigMap.
-  - [x] Triển khai và xác thực Cụm Kubernetes cục bộ (`kind`) với NGINX Ingress Controller.
-  - [x] Triển khai Cụm GKE Autopilot (`devspeak-gke-portfolio`) tại Singapore (`asia-southeast1`).
-  - [x] Cấu hình Argo CD đồng bộ tự động khai báo GitOps từ repository.
-  - [x] Khắc phục triệt để lỗi tiền tố `/api/v1` và cập nhật bản vá v1.0.2-candidate lên kind Revision 2.
+## Milestone 3: Cloud Foundations & Cost-Governed Infrastructure
+- **Goal**: Provision secure, cost-controlled cloud infrastructure using Terraform with scale-to-zero / free-tier safety.
+- **Status**: **PLANNED**
+- **Acceptance Criteria**:
+  - [ ] Terraform modules for target infrastructure (AWS or Supabase/Cloudflare).
+  - [ ] GitHub Actions OIDC integration (zero long-lived AWS keys in repo).
+  - [ ] Documented cost breakdown and teardown script verified locally.
+  - [ ] IaC security scanning (`tfsec` / `trivy config`).
+  - [ ] Explicit human approval step before any cloud execution.
+- **Verification Evidence**: `terraform plan` output reviewed and verified against cost safety limits.
 
 ---
 
-## 🎯 Cột Mốc 5: Hoàn Thiện Dự Án & Sẵn Sàng Công Bố Public (Milestone 5)
-- **Mục tiêu**: Nghiệm thu toàn diện 5 môi trường, củng cố tính sẵn sàng cao (HA), bảo vệ ngân sách FinOps và hoàn tất tài liệu bàn giao.
-- **Trạng thái**: 🟡 **GIAI ĐOẠN NGHIỆM THU CUỐI CÙNG (FINAL REVIEW)**
-- **Hạng mục thực hiện**:
-  - [x] Xác thực trực tiếp 5 môi trường (Compose, kind, Cloud Run Staging, Cloud Run Prod, GKE Autopilot).
-  - [x] Củng cố bảo mật WIF Production chỉ cho phép nhánh `main`.
-  - [x] Toàn bộ tài liệu kỹ thuật được chuyển ngữ sang tiếng Việt.
-  - [x] Rà soát 100% bí mật và khóa truy cập (0 commit/push lên GitHub).
-  - [ ] Đồng bộ bản vá Web v1.0.2 lên Cloud Run và GKE (khi có phê duyệt đóng gói release).
-  - [ ] Thiết lập bảng cảnh báo ngân sách Cloud Monitoring Budget Alert ($50 / $100).
+## Milestone 4: Local Kubernetes & GitOps Platform
+- **Goal**: Package application for Kubernetes and manage deployment declaratively via GitOps.
+- **Status**: **PLANNED**
+- **Acceptance Criteria**:
+  - [ ] Reproducible local cluster setup using KIND or k3d.
+  - [ ] Parameterized Helm charts for DevSpeak AI web and api services.
+  - [ ] Security configurations: non-root users, read-only root filesystems, resource limits, NetworkPolicies.
+  - [ ] Argo CD setup reconciling git state to local cluster.
+  - [ ] Demonstrated automated drift detection and recovery.
+- **Verification Evidence**: Cluster inspection logs showing healthy pods, synced Argo CD applications, and enforced security policies.
+
+---
+
+## Milestone 5: Observability, SRE & Incident Simulation
+- **Goal**: Implement production observability, actionable alerts, and operational runbooks.
+- **Status**: **PLANNED**
+- **Acceptance Criteria**:
+  - [ ] Structured JSON logging with request correlation IDs across services.
+  - [ ] Prometheus metrics (HTTP latency, status codes, AI provider latency and error rate).
+  - [ ] Grafana dashboards visualizing golden signals and interview session metrics.
+  - [ ] Documented incident response runbook and chaos simulation (e.g. AI provider timeout injection).
+- **Verification Evidence**: Live dashboard snapshots, metric scrape logs, and completed postmortem report for simulated failure.
+
+---
+
+## Milestone 6: Interactive Speaking Practice & Product Expansion
+- **Goal**: Expand into audio-based speech-to-text (STT) and text-to-speech (TTS) interview simulation.
+- **Status**: **PLANNED**
+- **Acceptance Criteria**:
+  - [ ] Client-side microphone audio recording with Web Audio API.
+  - [ ] Server-side STT integration with local fallback (Whisper API / Web Speech API).
+  - [ ] Speech pacing, filler-word detection (e.g., "um", "like", "you know"), and pronunciation tips.
+  - [ ] Audio response streaming via TTS.
+  - [ ] Quota management and rate limiting to prevent high audio processing costs.
+- **Verification Evidence**: Audio interaction test results and latency measurement benchmarks.
+
+---
+
+## Milestone 7: Portfolio, Documentation & Commercial Readiness
+- **Goal**: Polish product for public demonstration, showcase DevOps/DevSecOps engineering credentials, and establish production readiness.
+- **Status**: **PLANNED**
+- **Acceptance Criteria**:
+  - [ ] Complete architectural documentation with interactive diagrams.
+  - [ ] Recorded end-to-end video walkthrough.
+  - [ ] Published security whitepaper / DevSecOps audit summary.
+  - [ ] Single-command reproducible demo environment.
+

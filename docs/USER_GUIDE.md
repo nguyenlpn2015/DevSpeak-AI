@@ -1,386 +1,335 @@
-# Sổ Tay Hướng Dẫn Sử Dụng DevSpeak AI (End-User Guide)
+# DevSpeak AI — Candidate User Guide (End-User Manual)
 
-**Dành cho**: Ứng viên Kỹ sư Phần mềm (Software Engineers), Kỹ sư DevOps, SRE, Cloud, Platform & Chuyên viên IT Quốc tế  
-**Phiên bản ứng dụng**: DevSpeak AI v0.1.0 (Bilingual English / Vietnamese)  
-**Môi trường khả dụng**: Trình duyệt Web (Desktop, Tablet, Mobile) qua `http://localhost:3001`  
-
----
-
-## Mục Lục
-
-1. [Tổng quan sản phẩm & Yêu cầu tiên quyết](#1-tổng-quan-sản-phẩm--yêu-cầu-tiên-quyết)
-2. [Cách truy cập ứng dụng](#2-cách-truy-cập-ứng-dụng)
-3. [Đăng ký, Đăng nhập & Chế độ Khách (Guest Mode)](#3-đăng-ký-đăng-nhập--chế-độ-khách-guest-mode)
-4. [Bảng điều khiển & Điều hướng giao diện (Dashboard & Navigation)](#4-bảng-điều-khiển--điều-hướng-giao-diện-dashboard--navigation)
-5. [Tra cứu & Lọc ngân hàng câu hỏi (Question Bank)](#5-tra-cứu--lọc-ngân-hàng-câu-hỏi-question-bank)
-6. [Quy trình thực hành trong phòng phỏng vấn (AI Interview Studio)](#6-quy-trình-thực-hành-trong-phòng-phỏng-vấn-ai-interview-studio)
-7. [Gửi câu trả lời & Đọc báo cáo phản hồi AI (Feedback Report)](#7-gửi-câu-trả-lời--đọc-báo-cáo-phản-hồi-ai-feedback-report)
-8. [Bộ công cụ hỗ trợ: Từ vựng kỹ thuật & Khung STAR](#8-bộ-công-cụ-hỗ-trợ-từ-vựng-kỹ-thuật--khung-star)
-9. [Luyện phỏng vấn hội thoại qua Text (Multi-Turn AI Interviewer)](#9-luyện-phỏng-vấn-hội-thoại-qua-text-multi-turn-ai-interviewer)
-10. [Luyện nói qua Micro (Voice Mode) & Giới hạn trình duyệt](#10-luyện-nói-qua-micro-voice-mode--giới-hạn-trình-duyệt)
-11. [Theo dõi tiến độ, Điểm kinh nghiệm (XP) & Chuỗi ngày học (Streak)](#11-theo-dõi-tiến-độ-điểm-kinh-nghiệm-xp--chuỗi-ngày-học-streak)
-12. [Chuyển đổi song ngữ Anh — Việt (Language Switcher)](#12-chuyển-đổi-song-ngữ-anh--việt-language-switcher)
-13. [Xử lý sự cố thường gặp (Troubleshooting)](#13-xử-lý-sự-cố-thường-gặp-troubleshooting)
-14. [Chính sách bảo mật dữ liệu & Vận hành Offline](#14-chính-sách-bảo-mật-dữ-liệu--vận-hành-offline)
-15. [Câu hỏi thường gặp (FAQ)](#15-câu-hỏi-thường-gặp-faq)
-16. [Các giới hạn hiện tại & Tính năng đang phát triển](#16-các-giới-hạn-hiện-tại--tính-năng-đang-phát-triển)
+**Target Audience**: Software Engineers, DevOps Engineers, SREs, Cloud & Platform Engineers, and International IT Professionals  
+**Application Release**: DevSpeak AI v1.0.2 (Bilingual English / Vietnamese)  
+**Supported Environments**: Web Browsers (Desktop, Tablet, Mobile) across all 5 operational environments  
 
 ---
 
-## 1. Tổng quan sản phẩm & Yêu cầu tiên quyết
+## Table of Contents
 
-### 1.1. Mục đích sản phẩm
-**DevSpeak AI** là nền tảng huấn luyện phỏng vấn tiếng Anh kỹ thuật chuyên sâu dành cho kỹ sư IT Việt Nam chuẩn bị phỏng vấn tại các tập đoàn công nghệ đa quốc gia hoặc làm việc từ xa (Remote).
-
-Ứng dụng giúp bạn giải quyết 3 rào cản lớn nhất:
-- **Khoảng cách diễn đạt**: Hiểu sâu kỹ thuật nhưng lúng túng khi trình bày bằng tiếng Anh chuyên ngành.
-- **Thiếu cấu trúc câu trả lời**: Trả lời lan man, thiếu dẫn chứng theo chuẩn mực quốc tế (STAR, Root-cause Troubleshooting).
-- **Phản xạ xử lý tình huống**: Bị động trước các câu hỏi đào sâu (probing questions) về sự cố sản xuất (production outages) hay đánh đổi kiến trúc (architectural trade-offs).
-
-### 1.2. Yêu cầu thiết bị & Trình duyệt
-- **Thiết bị**: Máy tính để bàn (PC), Laptop, Tablet hoặc Smartphone có kết nối mạng nội bộ/Internet.
-- **Trình duyệt khuyến nghị**:
-  - **Google Chrome** (khuyên dùng tốt nhất cho tính năng Voice Micro).
-  - **Microsoft Edge** (hỗ trợ hoàn chỉnh Web Speech API).
-  - **Apple Safari** (hỗ trợ Voice và giao diện PWA).
-  - *Lưu ý*: Trình duyệt Mozilla Firefox hiện chưa hỗ trợ Speech Recognition API chuẩn; trên Firefox bạn vẫn thực hành đầy đủ qua bàn phím.
-- **Quyền hạn cần cấp**: Cho phép quyền truy cập **Microphone** khi muốn sử dụng tính năng luyện nói.
-
----
-
-## 2. Cách truy cập ứng dụng
-
-Khi hệ thống DevSpeak AI đã được khởi động trên máy trạm hoặc máy chủ nội bộ:
-
-1. Mở trình duyệt web của bạn.
-2. Truy cập vào địa chỉ chính thức của giao diện người dùng:
-   ```text
-   http://localhost:3001
-   ```
-3. Quan sát góc trên bên phải thanh **Header**:
-   - Nếu xuất hiện viên thuốc màu xanh ngọc với chấm sáng nhấp nháy ghi **Connected** (hoặc **Đã kết nối**): Hệ thống backend FastAPI trên cổng `8000` đang hoạt động hoàn hảo.
-   - Nếu xuất hiện viên thuốc màu hổ phách ghi **Offline** (hoặc **Mất kết nối**): Dịch vụ backend chưa sẵn sàng. Bạn có thể nhấp trực tiếp vào nút này để kích hoạt lệnh thăm dò lại (`Re-probe`).
-
-> [!NOTE]
-> Ứng dụng hỗ trợ giao diện đáp ứng (Responsive Design). Trên màn hình điện thoại (dưới 768px), thanh bên (Sidebar) sẽ tự động ẩn thành thanh trượt (Drawer) có thể mở qua nút menu 3 gạch ở góc trên bên trái.
+1. [Product Overview & Prerequisites](#1-product-overview--prerequisites)
+2. [Accessing the Application Across Environments](#2-accessing-the-application-across-environments)
+3. [Registration, Sign In & Guest Mode](#3-registration-sign-in--guest-mode)
+4. [Dashboard & Navigation (LinguaFlow Design)](#4-dashboard--navigation-linguaflow-design)
+5. [Browsing & Filtering the Question Bank](#5-browsing--filtering-the-question-bank)
+6. [Practicing in the 3-Zone AI Interview Studio](#6-practicing-in-the-3-zone-ai-interview-studio)
+7. [Submitting Answers & Interpreting AI Evaluation Reports](#7-submitting-answers--interpreting-ai-evaluation-reports)
+8. [Candidate Assistance Tools: Technical Vocabulary & STAR Framework](#8-candidate-assistance-tools-technical-vocabulary--star-framework)
+9. [Interactive Multi-Turn Interview Dialogue Engine](#9-interactive-multi-turn-interview-dialogue-engine)
+10. [Voice Practice Mode (Web Speech API) & Browser Compatibility](#10-voice-practice-mode-web-speech-api--browser-compatibility)
+11. [Progress Tracking, Experience Points (XP) & Day Streaks](#11-progress-tracking-experience-points-xp--day-streaks)
+12. [Bilingual Switching (English / Vietnamese)](#12-bilingual-switching-english--vietnamese)
+13. [Troubleshooting Common Issues](#13-troubleshooting-common-issues)
+14. [Privacy Policy & Local-First Security Architecture](#14-privacy-policy--local-first-security-architecture)
+15. [Frequently Asked Questions (FAQ)](#15-frequently-asked-questions-faq)
+16. [Current Capabilities & Upcoming Roadmap](#16-current-capabilities--upcoming-roadmap)
 
 ---
 
-## 3. Đăng ký, Đăng nhập & Chế độ Khách (Guest Mode)
+## 1. Product Overview & Prerequisites
 
-DevSpeak AI hỗ trợ hai hình thức trải nghiệm: **Có tài khoản cá nhân** (khuyên dùng để tích lũy XP và chuỗi ngày học) và **Chế độ Khách (Guest Mode)**.
+### 1.1. Purpose
+**DevSpeak AI** is a specialized technical English interview coaching platform crafted for IT and DevOps professionals preparing for senior technical interviews, live incident briefings, and system design defenses at international technology enterprises.
 
-### 3.1. Đăng ký tài khoản mới (Sign Up)
-1. Nhấp vào nút **Sign In** (hoặc **Đăng nhập**) màu tím ở góc trên bên phải thanh Header.
-2. Trong hộp thoại hiển thị, nhấp vào tab **Create Account** (Tạo tài khoản).
-3. Điền các trường thông tin:
-   - **Email**: Nhập địa chỉ email hợp lệ của bạn (ví dụ: `candidate@example.com`).
-   - **Password (Mật khẩu)**: Nhập tối thiểu **8 ký tự** (hỗ trợ tối đa 128 ký tự).
-   - **Full Name (Họ và tên)**: Tên hiển thị của bạn (ví dụ: `Nguyen Van A`).
-   - **Target Role (Vị trí mục tiêu)**: Chọn một trong các nhóm:
-     - `DevOps & SRE Engineer`
-     - `Cloud Architect`
-     - `Backend Engineer`
-     - `General IT Specialist`
-   - **Target Level (Trình độ CEFR mong muốn)**:
-     - `B1 - Intermediate` (Mức cơ bản)
-     - `B2 - Upper Intermediate` (*Khuyến nghị chuẩn cho phỏng vấn quốc tế*)
-     - `C1 - Advanced Professional` (Mức chuyên gia thành thạo)
-4. Nhấp vào nút **Create Account**. Hệ thống sẽ tự động đăng nhập và cấp mã định danh an toàn.
+The platform targets three primary interview obstacles:
+- **Expression Gap**: Deep engineering competency coupled with hesitation in articulating architectural nuances in fluent English.
+- **Unstructured Responses**: Lengthy, meandering explanations lacking industry-standard structures (STAR method, chronological triage, or root-cause retrospectives).
+- **Ad-Hoc Pressure**: Difficulty handling follow-up probing questions regarding production outages, scaling limits, or architectural trade-offs.
 
-### 3.2. Đăng nhập (Log In)
-1. Nhấp vào nút **Sign In** trên Header.
-2. Chọn tab **Sign In**.
-3. Nhập **Email** và **Password**.
-4. Nhấp nút **Sign In**. Sau khi đăng nhập thành công:
-   - Avatar chữ cái đầu và tên tài khoản sẽ xuất hiện trên thanh Header.
-   - Badge trình độ mục tiêu (ví dụ: `B2`) sẽ được hiển thị.
-   - Điểm số và tiến độ thực hành từ cơ sở dữ liệu sẽ được đồng bộ ngay lập tức.
-
-### 3.3. Đăng xuất (Log Out)
-- Nhấp vào biểu tượng cửa thoát màu đỏ (**Log Out**) bên cạnh tên tài khoản của bạn trên thanh Header. Dữ liệu phiên được dọn dẹp an toàn trên trình duyệt.
-
-### 3.4. Trải nghiệm không cần tài khoản (Chế độ Khách)
-- Bạn không bắt buộc phải đăng nhập để trải nghiệm. Bạn có thể duyệt câu hỏi, xem rubric, tra cứu flashcards và làm bài tập ngay lập tức.
-- *Lưu ý*: Ở chế độ khách, điểm kinh nghiệm (XP) và chuỗi ngày học sẽ chỉ lưu tạm thời trong phiên làm việc hiện tại của trình duyệt.
+### 1.2. Hardware & Browser Requirements
+- **Devices**: Desktop PCs, laptops, tablets, or smartphones with standard network connectivity.
+- **Recommended Browsers**:
+  - **Google Chrome** (*Recommended for best Web Speech API voice performance*).
+  - **Microsoft Edge** (Full native Web Speech API support).
+  - **Apple Safari** (Full Web Speech API and PWA installation support).
+  - *Note*: Mozilla Firefox does not natively implement the standard Web Speech API; on Firefox, all features operate seamlessly via keyboard input.
+- **Permissions**: Grant **Microphone access** when prompted if practicing via voice.
 
 ---
 
-## 4. Bảng điều khiển & Điều hướng giao diện (Dashboard & Navigation)
+## 2. Accessing the Application Across Environments
 
-Giao diện của DevSpeak AI áp dụng ngôn ngữ thiết kế **LinguaFlow** hiện đại với tông màu tối neon chuyên nghiệp, bao gồm 3 khu vực chính:
+DevSpeak AI is available across 5 distinct environments:
+
+| Environment | Purpose | URL |
+| :--- | :--- | :--- |
+| **GCP GKE Autopilot (Production)** | Flagship Kubernetes & GitOps deployment | [https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/](https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/) |
+| **GCP Cloud Run (Production)** | Production Serverless container deployment | [https://devspeak-web-prod-ygz4gsol4q-as.a.run.app](https://devspeak-web-prod-ygz4gsol4q-as.a.run.app) |
+| **GCP Cloud Run (Staging)** | Staging pre-release verification environment | [https://devspeak-web-staging-ygz4gsol4q-as.a.run.app](https://devspeak-web-staging-ygz4gsol4q-as.a.run.app) |
+| **Local Kubernetes (kind)** | Local cluster with Ingress-NGINX | `http://localhost/` |
+| **Local Docker Compose** | Full local developer stack | `http://localhost:3001` |
+
+### Connection Health Indicator
+In the top-right corner of the **Header**:
+- **Connected (Green Pulse)**: The frontend is actively communicating with the backend FastAPI engine (`/readyz` probe returning HTTP 200).
+- **Offline / Degraded (Amber)**: The backend service is currently unreachable or starting up. Clicking this badge triggers an immediate background probe retry.
+
+---
+
+## 3. Registration, Sign In & Guest Mode
+
+DevSpeak AI supports both authenticated accounts (for persistent XP and streak tracking) and instant Guest Mode.
+
+### 3.1. Creating an Account (Sign Up)
+1. Click the purple **Sign In** button in the header.
+2. Select the **Create Account** tab.
+3. Fill in the required fields:
+   - **Email**: A valid email address (e.g., `engineer@example.com`).
+   - **Password**: Minimum 8 characters (up to 128 characters, hashed with Argon2id).
+   - **Full Name**: Your display name.
+   - **Target Role**: Select your specialization (`DevOps & SRE Engineer`, `Cloud Architect`, `Backend Engineer`, or `General IT Specialist`).
+   - **Target Level**: Desired CEFR fluency milestone (`B1 - Intermediate`, `B2 - Upper Intermediate` *[Recommended for global hiring]*, or `C1 - Advanced Professional`).
+4. Click **Create Account**. Your session is immediately authenticated with a secure JWT.
+
+### 3.2. Signing In
+1. Click **Sign In** in the header.
+2. Enter your **Email** and **Password**.
+3. Click **Sign In**. Your avatar, CEFR badge, and saved database progress sync instantly.
+
+### 3.3. Guest Mode
+- You may explore questions, review rubrics, inspect flashcards, and submit answers without signing in.
+- In Guest Mode, session metrics are maintained locally in browser memory for the duration of the visit.
+
+---
+
+## 4. Dashboard & Navigation (LinguaFlow Design)
+
+DevSpeak AI employs the **LinguaFlow** design system—a dark-neon interface optimized for extended engineering focus:
 
 ```
 +-----------------------------------------------------------------------------------------+
 | [Header] Logo DevSpeak AI | AI Studio Pill | Nav Tabs | Status (Connected) | Lang | User|
 +---------------------+-------------------------------------------------------------------+
 | [LinguaSidebar]     | [Main Content Area]                                               |
-| - Day Streak & Level| - Banner Chào mừng & Cấp độ hiện tại                              |
-| - Thanh tiến độ XP  | - 4 Thẻ chỉ số tổng quan (Streak, XP, Từ vựng, Trình độ)         |
-|                     | - Biểu đồ rèn luyện theo tuần & Lịch chuỗi ngày                    |
-| - Bảng điều khiển   | - Thẻ hành động nhanh: Review Cards, Shadow, Talk AI, Exercises   |
-| - Ngân hàng câu hỏi | - Mục tiêu hôm nay & Huy hiệu thành tựu                          |
-| - Thẻ ghi nhớ       |                                                                   |
-| - Phòng phỏng vấn   |                                                                   |
-| - Phương pháp STAR  |                                                                   |
+| - Day Streak & Level| - Welcome Banner & Current Target CEFR Level                      |
+| - XP Progress Bar   | - 4 Metric Cards: Streak, Total XP, Words Mastered, Rank          |
+|                     | - Weekly Practice Velocity & Day Streak Grid                      |
+| - Dashboard         | - Quick Actions: Review Cards, Shadow Practice, Talk AI, Practice |
+| - Question Bank     | - Today's Recommended Goal & Milestone Badges                     |
+| - Flashcards Vault  |                                                                   |
+| - Interview Studio  |                                                                   |
+| - STAR Method       |                                                                   |
 +---------------------+-------------------------------------------------------------------+
-| [Footer] Bản quyền © 2026 DevSpeak AI • Security-First • Zero Cost • Local-First        |
+| [Footer] Copyright © 2026 DevSpeak AI • Security-First • Zero Cost • Local-First        |
 +-----------------------------------------------------------------------------------------+
 ```
 
-### 4.1. Thanh điều hướng bên trái (LinguaSidebar)
-- **Day Streak & Level**: Hiển thị số ngày bạn liên tục luyện tập và cấp độ mục tiêu.
-- **Thanh tiến độ XP**: Thước đo trực quan thể hiện điểm kinh nghiệm đã đạt được trên tổng số 500 XP của mỗi cấp độ.
-- **Danh mục chức năng (Learn Section)**:
-  - **Dashboard**: Trở về màn hình tổng quan và thống kê năng lực.
-  - **Question Bank**: Mở ngân hàng 26 câu hỏi phỏng vấn kỹ thuật phân loại theo chủ đề.
-  - **Flashcards / Vocab Vault**: Mở không gian ôn tập từ vựng kỹ thuật 3D.
-  - **Practice Studio / Shadowing**: Mở ngay phòng phỏng vấn trực tiếp cho câu hỏi đang chọn.
-  - **STAR Method**: Mở kịch bản câu hỏi hành vi xử lý sự cố chuẩn hóa theo mô hình STAR.
-
-### 4.2. Màn hình Dashboard Flagship
-- **Thẻ chỉ số tổng hợp (Metric Cards)**:
-  - `Day Streak`: Số ngày liên tục mở ứng dụng và nộp bài luyện tập.
-  - `Total XP`: Điểm tích lũy (nhận 50 XP cho mỗi câu hỏi hoàn thành kèm điểm thưởng theo chất lượng câu trả lời).
-  - `Words Learned`: Số lượng thuật ngữ và mẫu câu kỹ thuật bạn đã áp dụng thành công.
-  - `Level`: Cấp độ hiện tại của bạn dựa trên tổng số XP.
-- **Khu vực Tiếp tục học tập (Continue Learning)**:
-  - *Review Cards*: Khởi động bộ thẻ nhớ từ vựng.
-  - *Shadow Practice*: Luyện nói mô phỏng theo mẫu câu chuyên gia.
-  - *Talk with AI*: Bắt đầu hội thoại hỏi đáp nhiều lượt với AI Interviewer.
-  - *Do Exercises*: Thực hành ghép khung cấu trúc sự cố.
+### 4.1. Navigation Sidebar
+- **Day Streak & Level**: Real-time counter of consecutive practice days.
+- **XP Progress Bar**: Visual gauge tracking progression toward the next 500 XP milestone.
+- **Sections**:
+  - **Dashboard**: High-level learning analytics, velocity charts, and recommended exercises.
+  - **Question Bank**: 26 production interview scenarios cataloged by domain and difficulty.
+  - **Flashcards / Vocab Vault**: Interactive 3D technical terminology flashcards with native pronunciation.
+  - **Practice Studio**: Focused 3-zone interview simulator for the selected question.
+  - **STAR Method**: Behavioral and incident mitigation templates structured via the STAR model.
 
 ---
 
-## 5. Tra cứu & Lọc ngân hàng câu hỏi (Question Bank)
+## 5. Browsing & Filtering the Question Bank
 
-Ngân hàng đề thi của DevSpeak AI bao gồm **26 kịch bản phỏng vấn kỹ thuật chuyên sâu**, được tuyển chọn bám sát thực tế tuyển dụng của các công ty công nghệ quốc tế.
+The question catalog contains **26 curated technical interview prompts** mapped to real-world evaluation rubrics used by global tech firms:
 
-### 5.1. Các nhóm chủ đề (Topics)
-1. **Kubernetes Architecture & Diagnostics**: Sự cố `CrashLoopBackOff`, Ingress DNS routing, Giới hạn tài nguyên cgroup & `OOMKilled`, CNI NetworkPolicies.
-2. **CI/CD & DevSecOps Pipelines**: Chiến lược điều phối Canary rollback, Tích hợp quét bảo mật SAST/DAST, GitOps với ArgoCD.
-3. **Linux Internals & SRE Diagnostics**: Chẩn đoán tải cao `high iowait`, Phân tích cgroup memory saturation, Bắt gói tin sự cố mạng với `tcpdump`.
-4. **AWS Cloud Infrastructure**: Tối ưu hóa chi phí truyền tải Multi-AZ, Thiết kế phân quyền đặc quyền tối thiểu IAM Least Privilege, So sánh Transit Gateway vs VPC Peering.
-5. **Docker & Containerization**: Tối ưu bộ nhớ đệm đa tầng (Multi-stage build caching), Xây dựng container Distroless chạy dưới quyền Non-root user.
-6. **System Design & Distributed Systems**: Thiết kế Rate Limiter phân tán, Idempotent webhook xử lý thanh toán, Khắc phục Database Replication Lag.
-7. **STAR Behavioral & Engineering Leadership**: Báo cáo sự cố hệ thống nghiêm trọng (Production Outage Retrospective), Bất đồng quan điểm kỹ thuật với Principal Engineer, Kèm cặp kỹ sư mới.
+### 5.1. Engineering Topics Covered
+1. **Kubernetes Architecture & Diagnostics**: Pod `CrashLoopBackOff` investigation, Ingress DNS routing, cgroup memory limits & `OOMKilled` (Exit Code 137), CNI NetworkPolicies.
+2. **CI/CD & DevSecOps Pipelines**: Automated Canary rollbacks, SAST/DAST pipeline integration, GitOps reconciliation workflows with Argo CD.
+3. **Linux Internals & SRE Diagnostics**: High `iowait` storage bottlenecks, cgroup memory saturation, kernel network packet inspection with `tcpdump`.
+4. **AWS & Multi-Cloud Infrastructure**: Multi-AZ network transfer cost optimization, IAM Least Privilege policies, Transit Gateway vs VPC Peering trade-offs.
+5. **Docker & Containerization**: Multi-stage build caching, non-root user execution, and minimal Distroless image hardening.
+6. **Distributed Systems & System Design**: Distributed rate limiters (Token Bucket vs Leaky Bucket), idempotent payment webhooks, database replication lag mitigation.
+7. **STAR Behavioral & Engineering Leadership**: Production outage post-mortems, architectural disagreements with Principal Engineers, junior engineer mentorship.
 
-### 5.2. Cách lọc và tìm kiếm câu hỏi
-1. Nhấp vào tab **Question Bank** trên Header hoặc Sidebar.
-2. Sử dụng 3 thanh lọc linh hoạt:
-   - **Role (Vai trò)**: Chọn `All Roles`, `DevOps Engineer`, hoặc `Software Engineer`.
-   - **Topic (Chủ đề)**: Chọn chủ đề kỹ thuật bạn muốn tập trung ôn luyện.
-   - **Difficulty (Độ khó)**: Lọc theo cấp bậc `Junior`, `Mid-Level`, hoặc `Senior`.
-3. Số lượng câu hỏi tương ứng với bộ lọc sẽ lập tức được cập nhật trên màn hình.
-
-### 5.3. Xem chi tiết thông số câu hỏi (View Details)
-- Trên mỗi thẻ câu hỏi, bấm nút **View Details**:
-  - Xem toàn văn đề bài tiếng Anh chuẩn quốc tế.
-  - Tra cứu các tiêu chí đánh giá cốt lõi (**Key Concepts**).
-  - Khám phá các câu hỏi phụ mà nhà tuyển dụng thường hỏi đào sâu (**Follow-up Questions**).
-  - Bấm **Practice in Studio** để nạp đề bài này vào phòng luyện tập.
+### 5.2. Search and Filtering
+- Filter by **Role** (`All Roles`, `DevOps Engineer`, `Software Engineer`).
+- Filter by **Topic** (Kubernetes, Linux, AWS, CI/CD, System Design, STAR).
+- Filter by **Difficulty** (`Junior`, `Mid-Level`, `Senior`).
+- Click **View Details** on any card to examine key evaluation criteria and follow-up questions, or click **Practice in Studio** to immediately launch the simulation.
 
 ---
 
-## 6. Quy trình thực hành trong phòng phỏng vấn (AI Interview Studio)
+## 6. Practicing in the 3-Zone AI Interview Studio
 
-Phòng phỏng vấn **AI Interview Studio** được thiết kế theo cấu trúc 3 khu vực (3-Zone Workspace) chuyên nghiệp:
+The **AI Interview Studio** provides a dedicated, independently scrollable three-column workspace:
 
 ```
 +---------------------------------------------------------------------------------------------------+
 | AI INTERVIEW STUDIO                                                                               |
 +--------------------------+------------------------------------------+-----------------------------+
-| CỘT 1: ĐIỀU HƯỚNG PHIÊN  | CỘT 2: KHÔNG GIAN SOẠN THẢO TRẢ LỜI      | CỘT 3: BẢNG TIÊU CHÍ RUBRIC |
-| - Tiến độ câu hỏi        | - Đề bài & Tiêu chuẩn đánh giá           | - Từ khóa cốt lõi           |
-| - Danh sách 26 câu hỏi   | - Phím bật Voice Micro [Click to Speak]  | - Mẹo STAR Framework        |
-| - Nút Thoát (Exit)       | - Khung soạn thảo văn bản tiếng Anh      | - Xem câu trả lời mẫu       |
-|                          | - Các chip trợ giúp STAR & Triage        |   [Study Model Answer]      |
-|                          | - Nút Gửi bài [Submit Answer]            |                             |
+| COLUMN 1: QUESTION LIST  | COLUMN 2: RESPONSE EDITOR                | COLUMN 3: RUBRIC & COACH    |
+| - Header & Counter (26)  | - Scenario & Technical Prompt (Bounded)  | - Key Technical Concepts    |
+| - Topic & Difficulty Tag | - Voice Mode [Click to Speak]            | - 1-Click Vocabulary Insert |
+| - Scrollable Catalog     | - English Text Draft Editor              | - STAR Framework Helper     |
+| - Exit Action            | - Character Counter (10 - 4,000)         | - Expert Model Answer       |
+|                          | - [Study Model Answer] & [Submit Answer] |   [Study Model Answer]      |
 +--------------------------+------------------------------------------+-----------------------------+
 ```
 
-### Các bước thực hành từng bước:
-1. **Đọc kỹ đề bài**: Đọc kỹ phần **Interview Scenario & Technical Prompt** ở khung giữa.
-2. **Nghiên cứu gợi ý kỹ thuật**: Nhìn sang cột bên phải để xem các công nghệ trọng tâm cần nhắc tới (ví dụ: `kubectl describe pod`, `Exit Code 137`, `OOMKilled`).
-3. **Soạn thảo câu trả lời**:
-   - Gõ trực tiếp bằng tiếng Anh vào khung soạn thảo.
-   - Hoặc bật Microphone để nói (xem mục 10).
-4. **Kiểm tra độ dài**:
-   - Bộ đếm ký tự thời gian thực sẽ hiển thị phía dưới khung soạn thảo.
-   - Độ dài hợp lệ: Tối thiểu **10 ký tự** và không quá **4.000 ký tự**.
-5. **Gửi bài đánh giá**:
-   - Nhấp vào nút màu tím **Submit Answer**.
-   - Hoặc bấm tổ hợp phím tắt: `Ctrl + Enter` (Windows/Linux) hoặc `Cmd + Enter` (macOS).
+### Step-by-Step Practice Workflow:
+1. **Analyze the Prompt**: Review the technical context, incident symptoms, and evaluation criteria in Column 2.
+2. **Inspect Technical Keywords**: Check Column 3 for industry-standard terminology expected in a high-scoring response (e.g., `cgroup`, `kubectl describe`, `graceful termination`).
+3. **Draft Your Response**:
+   - Type your technical response in English into the central editor.
+   - Or click **Click to Speak** to articulate your answer vocally.
+4. **Verify Length**: Responses must be between **10 characters** (minimum to form a valid thought) and **4,000 characters**.
+5. **Submit for Scoring**:
+   - Click the purple **Submit Answer** button.
+   - Or press keyboard shortcut: `Ctrl + Enter` (Windows/Linux) or `Cmd + Enter` (macOS).
 
 ---
 
-## 7. Gửi câu trả lời & Đọc báo cáo phản hồi AI (Feedback Report)
+## 7. Submitting Answers & Interpreting AI Evaluation Reports
 
-Ngay sau khi gửi bài, hệ thống AI sẽ phân tích câu trả lời của bạn qua 3 tiêu chuẩn khắt khe và xuất bản **Báo cáo đánh giá toàn diện**:
+Upon submission, the evaluation engine scores your response across 3 dimensions:
 
-### 7.1. Bảng điểm 3 trụ cột (Scores Breakdown)
-- **Technical Accuracy (Độ chính xác kỹ thuật — 1.0 đến 10.0)**: Kiểm tra bạn có nắm đúng bản chất cơ chế hoạt động, câu lệnh, công cụ và quy trình kỹ thuật hay không.
-- **Grammar & Tone (Ngữ pháp & Văn phong chuyên nghiệp — 1.0 đến 10.0)**: Đánh giá độ chuẩn xác về thì, cấu trúc câu, cách sử dụng liên từ và phong thái tự tin của một kỹ sư quốc tế.
-- **Clarity & Structure (Mạch lạc & Cấu trúc logic — 1.0 đến 10.0)**: Đo lường khả năng dẫn dắt luận điểm rõ ràng, có đầu có cuối.
-- **Overall Score (Điểm tổng hợp)**: Phân tầng năng lực:
-  - `Developing (< 6.0)`: Cần củng cố thêm từ vựng và cấu trúc.
-  - `Solid (6.0 - 7.9)`: Đạt chuẩn phỏng vấn kỹ thuật cơ bản.
-  - `Strong (8.0 - 10.0)`: Xuất sắc, sẵn sàng cho các vòng phỏng vấn cấp cao (Staff / Lead).
+### 7.1. Three-Pillar Scoring Rubric (1.0 to 10.0 scale)
+- **Technical Accuracy (Weight: 50%)**: Evaluates whether commands, flags, architectural mechanics, and root-cause explanations are technically correct.
+- **Clarity & STAR Structure (Weight: 30%)**: Evaluates whether your response follows a logical, methodical sequence (Situation, Problem, Investigation, Mitigation, Prevention).
+- **English Grammar & Professional Tone (Weight: 20%)**: Evaluates syntactic precision, professional conciseness, engineering idioms, and passive/active voice balance.
+- **Overall Score**:
+  - `Developing (< 6.0)`: Needs further terminology reinforcement and structural discipline.
+  - `Solid (6.0 - 7.9)`: Meets standard mid-level engineering interview expectations.
+  - `Strong (8.0 - 10.0)`: Senior/Staff level articulation with exceptional clarity and depth.
 
-### 7.2. Các tab phân tích chi tiết
-- **Technical Feedback (Góp ý chuyên môn)**: Liệt kê rõ những luận điểm bạn đã làm tốt và các kiến thức còn thiếu sót cần bổ sung.
-- **Grammar Improvements (Sửa lỗi ngữ pháp & Cách diễn đạt)**: Gợi ý cách viết lại câu tiếng Anh của bạn theo giọng điệu tự nhiên của kỹ sư bản ngữ (Native Engineering Idioms).
-- **Structure (Cấu trúc luận điểm)**: Hướng dẫn sắp xếp thứ tự các bước xử lý sự cố.
-- **Benchmark Model Answer (Câu trả lời mẫu điểm 10)**: Mẫu câu trả lời hoàn chỉnh được biên soạn bởi chuyên gia. Bạn có thể bấm nút **Copy Answer** để sao chép vào bộ nhớ tạm.
-- **Suggested Follow-up Questions**: 2 câu hỏi mở rộng giúp bạn lường trước những câu hỏi bẫy của nhà tuyển dụng.
+### 7.2. Detailed Feedback Sections
+- **Technical Feedback**: Specific highlights of concepts correctly explained alongside omitted diagnostic steps.
+- **Grammar & Fluency Suggestions**: Concrete sentence rewrites showing how native engineering leads phrase the same thought.
+- **Structural Coaching**: Recommendations on ordering triage steps chronologically.
+- **Benchmark Model Answer**: A comprehensive 10/10 model answer written by senior engineering leaders. Click **Copy Answer** to copy to clipboard for study.
+- **Follow-up Questions**: Realistic follow-up probing questions to prepare for deep-dive interview stages.
 
 ---
 
-## 8. Bộ công cụ hỗ trợ: Từ vựng kỹ thuật & Khung STAR
+## 8. Candidate Assistance Tools: Technical Vocabulary & STAR Framework
 
-Để bạn không bao giờ rơi vào tình trạng "bí từ", Studio tích hợp sẵn các công cụ hỗ trợ tức thì:
+### 8.1. 1-Click Vocabulary Insertion (Vocabulary Coach)
+- In the right-hand **Rubric** panel, clicking any technical keyword (e.g., `CrashLoopBackOff`, `Exit Code 137`, `terminationGracePeriodSeconds`) automatically appends it into your active draft editor at the current cursor position.
 
-### 8.1. Chèn từ vựng kỹ thuật 1 chạm (Vocabulary Coach)
-- Trong cột **Rubric Cheat Sheet**, mỗi câu hỏi đều có danh sách các từ khóa then chốt (**Key Technical Concepts**).
-- Bạn chỉ cần **nhấp chuột vào bất kỳ từ khóa nào** (ví dụ: `cgroup memory limits`), hệ thống sẽ tự động chèn từ khóa đó vào khung soạn thảo nháp của bạn và di chuyển con trỏ chuột về vị trí sẵn sàng.
+### 8.2. STAR Framework Generator
+- Clicking **Insert STAR Template** above the response editor prepopulates the standard 4-phase framework:
+  - `Situation`: Production environment context and incident symptoms.
+  - `Task`: Candidate's direct engineering responsibility under SLA.
+  - `Action`: Diagnostic commands executed and configuration remedies applied.
+  - `Result`: Measurable business outcome (downtime minimized, MTTR reduced).
 
-### 8.2. Mẫu khung cấu trúc STAR (STAR Framework Chip)
-- Khi phỏng vấn về các câu hỏi hành vi hoặc sự cố, nhấp vào nút **Insert STAR Template** phía trên khung soạn thảo.
-- Khung sườn 4 phần sẽ tự động được điền:
-  - `Situation`: Bối cảnh hệ thống và quy mô sự cố phát sinh.
-  - `Task`: Mục tiêu và trách nhiệm trực tiếp của bạn trong SLA.
-  - `Action`: Các hành động kỹ thuật bạn đã điều tra và khắc phục.
-  - `Result`: Kết quả định lượng (giảm downtime, khôi phục dữ liệu 100%).
-- Việc của bạn là chỉ cần thay đổi số liệu thực tế của dự án mình vào mẫu có sẵn.
-
-### 8.3. Mẫu chẩn đoán sự cố (Troubleshooting Flow Chip)
-- Bấm nút **Insert Troubleshooting Steps** để chèn ngay mẫu câu mở đầu chuẩn mực:
+### 8.3. Troubleshooting Chronology Helper
+- Clicking **Insert Troubleshooting Steps** inserts an industry-standard opening template:
   > *"When diagnosing this issue in production, I take a structured chronological approach. First, I verify container and node events. Next, I inspect previous termination logs. Finally, I apply the targeted mitigation via our deployment manifest."*
 
-### 8.4. Thẻ ghi nhớ từ vựng 3D (Flashcards Studio)
-- Truy cập mục **Flashcards** trên thanh Sidebar:
-  - Bấm vào thẻ để lật mặt sau xem giải nghĩa kỹ thuật và ví dụ ngữ cảnh.
-  - Nhấp vào biểu tượng chiếc loa để nghe phát âm tiếng Anh chuẩn.
-  - Bấm **Practice in Studio** trên thẻ để chuyển ngay sang câu hỏi phỏng vấn ứng dụng thuật ngữ đó.
+### 8.4. 3D Flashcards Vault
+- Navigate to **Flashcards** in the sidebar:
+  - Click any card to flip between definition, architecture role, and real-world example.
+  - Click the speaker icon for native audio pronunciation.
+  - Click **Practice in Studio** to immediately transition to an interview scenario utilizing that concept.
 
 ---
 
-## 9. Luyện phỏng vấn hội thoại qua Text (Multi-Turn AI Interviewer)
+## 9. Interactive Multi-Turn Interview Dialogue Engine
 
-Thay vì chỉ chấm điểm một lần, DevSpeak AI cung cấp chế độ **Phỏng vấn hội thoại tương tác (Multi-Turn Interview Session)**:
-
-1. Khi bạn bắt đầu một phiên phỏng vấn mới, AI Interviewer sẽ chào mừng bạn và đặt câu hỏi mở đầu (**Turn 0**).
-2. Bạn nhập câu trả lời của mình (**Turn 1**):
-   - AI ghi nhận phần trả lời.
-   - Thay vì kết thúc, AI sẽ đóng vai người phỏng vấn khó tính và đặt một câu hỏi đào sâu: *"Good initial diagnosis. However, how would you ensure this doesn't impact other pods sharing the same node?"*
-3. Bạn tiếp tục giải thích phương án dự phòng (**Turn 2**).
-4. Đến lượt cuối cùng (**Turn 3**): AI sẽ tổng kết toàn bộ buổi phỏng vấn, đánh dấu phiên hoàn tất (`Completed`) và xuất bản bảng điểm toàn diện cho toàn bộ chuỗi hội thoại.
+Beyond single-turn assessment, DevSpeak AI features a stateful **Multi-Turn Interview Engine**:
+1. **Turn 0 (Initiation)**: The AI interviewer welcomes you and introduces the core architectural scenario.
+2. **Turn 1 (Initial Triage)**: You submit your opening diagnostic plan. The AI validates your steps and poses a targeted follow-up question challenging an edge case (e.g., *"Good initial diagnosis. However, how would you ensure this doesn't impact other pods sharing the same node?"*).
+3. **Turn 2 (Deep-Dive Defense)**: You defend your design choice or secondary mitigation.
+4. **Turn 3 (Evaluation)**: The AI delivers a final holistic summary, marks the session `Completed`, and generates composite scores for the entire conversational chain.
 
 ---
 
-## 10. Luyện nói qua Micro (Voice Mode) & Giới hạn trình duyệt
+## 10. Voice Practice Mode (Web Speech API) & Browser Compatibility
 
-### 10.1. Hướng dẫn sử dụng tính năng Voice Input
-1. Trong phòng Studio, tìm nút **Click to Speak** (biểu tượng micro màu tím) nằm ngay phía trên góc phải khung trả lời.
-2. Nhấp vào nút **Click to Speak**.
-3. Nếu trình duyệt hiện hộp thoại hỏi *"devspeak muốn sử dụng micro của bạn"*, nhấp **Allow** (Cho phép).
-4. Biểu tượng chuyển sang trạng thái nhấp nháy đỏ kèm nhãn **Listening...**: Hãy bắt đầu trả lời bằng tiếng Anh rõ ràng với tốc độ vừa phải.
-5. Khi bạn nói, văn bản tiếng Anh sẽ tự động được phiên âm và hiển thị theo thời gian thực.
-6. Sau khi nói xong, nhấp nút **Stop Recording**. Toàn bộ văn bản sẽ được tự động chèn vào khung nháp để bạn có thể đọc lại, sửa chính tả trước khi bấm **Submit Answer**.
+### 10.1. Using Voice Input
+1. In the Studio workspace, locate the **Click to Speak** button (purple microphone icon) above the answer editor.
+2. Click **Click to Speak**.
+3. When prompted by your browser, select **Allow** for microphone permissions.
+4. The icon pulses red with the label **Listening...**: Speak your technical answer clearly at a natural cadence.
+5. Speech is transcribed in real-time directly into the editor.
+6. Click **Stop Recording** when finished. You may edit the transcribed text before submitting.
 
-### 10.2. Giới hạn & Lưu ý quan trọng
-- **Yêu cầu bảo mật trình duyệt**: Trình duyệt chỉ cho phép truy cập micro khi chạy trên kết nối bảo mật (`https://`) hoặc máy cục bộ (`http://localhost`).
-- **Trình duyệt tương thích**: Tính năng hoạt động mượt mà trên Chrome, Edge và Safari. Trên trình duyệt Firefox, nút Voice sẽ hiển thị thông báo trình duyệt chưa hỗ trợ Web Speech API; bạn hãy dùng bàn phím để nhập liệu.
-- **Tiếng ồn môi trường**: Nên sử dụng tai nghe có micro để hệ thống nhận diện từ vựng kỹ thuật chính xác nhất.
-
----
-
-## 11. Theo dõi tiến độ, Điểm kinh nghiệm (XP) & Chuỗi ngày học (Streak)
-
-Khi bạn đăng nhập tài khoản:
-- **Tích lũy Điểm kinh nghiệm (Total XP)**:
-  - Mỗi câu trả lời được nộp và đánh giá thành công: **+50 XP cơ bản**.
-  - Đạt điểm Overall Score $\ge 8.0$: **+25 XP thưởng thành tích**.
-  - Hoàn tất trọn vẹn 3 lượt phỏng vấn hội thoại: **+30 XP hoàn thành phiên**.
-- **Thăng hạng Cấp độ (Level Up)**:
-  - Cứ mỗi 500 XP tích lũy, bạn sẽ thăng lên một cấp độ mới (Level 1 $\to$ Level 2 $\to$ Level 3...).
-- **Chuỗi ngày học liên tục (Day Streak)**:
-  - Hệ thống tự động ghi nhận chuỗi ngày bạn vào thực hành. Duy trì thói quen mỗi ngày ít nhất một câu hỏi để không bị gián đoạn chuỗi streak.
+### 10.2. Browser Security Requirements
+- Web Speech API requires a secure context (**HTTPS** in production or **localhost** in development).
+- Fully supported in **Google Chrome**, **Microsoft Edge**, and **Apple Safari**.
+- If running on Firefox or unsupported platforms, an informative banner suggests keyboard entry.
 
 ---
 
-## 12. Chuyển đổi song ngữ Anh — Việt (Language Switcher)
+## 11. Progress Tracking, Experience Points (XP) & Day Streaks
 
-DevSpeak AI là ứng dụng được thiết kế song ngữ hoàn chỉnh:
-
-- Nhấp vào nút **EN / VI** trên thanh Header (góc trên bên phải):
-  - Chuyển sang **VI**: Toàn bộ giao diện bảng điều khiển, hướng dẫn làm bài, thanh điều hướng và nhãn nút bấm sẽ hiển thị bằng tiếng Việt thân thuộc.
-  - Chuyển sang **EN**: Giao diện hiển thị 100% bằng tiếng Anh quốc tế.
-- **Nguyên tắc bảo tồn tiếng Anh kỹ thuật**: Các câu hỏi phỏng vấn, rubric đánh giá, câu hỏi đào sâu và câu trả lời mẫu luôn được giữ nguyên văn bằng tiếng Anh để đảm bảo bạn được cọ xát với môi trường phỏng vấn thực tế.
-- Tùy chọn ngôn ngữ của bạn được lưu tự động trong bộ nhớ trình duyệt (`localStorage`) và được giữ nguyên cho các lần truy cập sau.
-
----
-
-## 13. Xử lý sự cố thường gặp (Troubleshooting)
-
-### Sự cố 1: Nút trạng thái Header báo màu hổ phách "Offline"
-- **Nguyên nhân**: Frontend không kết nối được tới API FastAPI trên cổng `8000`.
-- **Cách khắc phục**:
-  1. Nhấp trực tiếp vào viên thuốc trạng thái **Offline** để kích hoạt thăm dò lại.
-  2. Kiểm tra xem Docker container `devspeak-api` có đang chạy hay không bằng lệnh: `docker compose ps`.
-  3. Đảm bảo cổng `8000` không bị chặn bởi tường lửa hoặc phần mềm diệt virus.
-
-### Sự cố 2: Nút Micro báo "Speech recognition is not supported in this browser"
-- **Nguyên nhân**: Trình duyệt bạn đang dùng (ví dụ: Firefox) không tích hợp sẵn Web Speech API.
-- **Cách khắc phục**: Chuyển sang sử dụng trình duyệt Google Chrome hoặc Microsoft Edge để tận hưởng tính năng thu âm nhận diện giọng nói.
-
-### Sự cố 3: Nút Micro không ghi âm được / Lỗi từ chối quyền Micro
-- **Nguyên nhân**: Quyền truy cập Microphone đã bị chặn trong cài đặt trang web.
-- **Cách khắc phục**:
-  1. Nhấp vào biểu tượng **Ổ khóa** (hoặc biểu tượng Tune) ở góc bên trái thanh địa chỉ URL trình duyệt.
-  2. Tại mục **Microphone**, chuyển từ *Block* sang **Allow**.
-  3. Tải lại trang (`F5`) và bấm lại vào nút **Click to Speak**.
-
-### Sự cố 4: Nút Submit Answer bị mờ (Disabled) không bấm được
-- **Nguyên nhân**: Câu trả lời của bạn quá ngắn (dưới 10 ký tự) hoặc quá dài (vượt quá 4.000 ký tự).
-- **Cách khắc phục**: Kiểm tra bộ đếm ký tự phía dưới ô nhập. Hãy bổ sung thêm chi tiết kỹ thuật để câu trả lời đạt tối thiểu 10 ký tự.
+Authenticated users automatically earn progression rewards:
+- **Base XP**: +50 XP per submitted and evaluated interview answer.
+- **Merit Bonus**: +25 XP for responses achieving an Overall Score $\ge 8.0$.
+- **Session Completion Bonus**: +30 XP for completing a multi-turn dialogue session.
+- **Level Progression**: Every 500 accumulated XP unlocks a new rank level (Level 1 $\to$ Level 2 $\to$ Level 3...).
+- **Daily Streak**: Increments for every unique calendar day you submit at least one interview exercise.
 
 ---
 
-## 14. Chính sách bảo mật dữ liệu & Vận hành Offline
+## 12. Bilingual Switching (English / Vietnamese)
 
-DevSpeak AI được xây dựng theo triết lý **Security-First** và **Local-First**:
-- **Bảo mật mật khẩu tuyệt đối**: Mật khẩu tài khoản của bạn được mã hóa một chiều bằng thuật toán băm bộ nhớ cao cấp nhất hiện nay là **Argon2id**. Hệ thống không bao giờ lưu trữ hoặc in mật khẩu dưới dạng văn bản thô.
-- **Cô lập dữ liệu phiên**: Dữ liệu phiên phỏng vấn và điểm số của bạn được liên kết chặt chẽ với tài khoản định danh qua mã JWT.
-- **Vận hành Offline / 0-Cost**: Hệ thống tích hợp sẵn bộ máy chấm điểm **Offline Mock Provider**. Bạn hoàn toàn có thể luyện tập không giới hạn mà không cần nạp tiền, không cần thẻ tín dụng và không lo rò rỉ dữ liệu lên các máy chủ công cộng.
-- **Khi sử dụng Google Gemini**: Nếu bạn cấu hình khóa API Gemini của riêng mình, chỉ có nội dung câu hỏi và câu trả lời của bạn được gửi đi để phân tích ngôn ngữ; thông tin tài khoản và mật khẩu của bạn tuyệt đối không bao giờ được gửi tới bên thứ ba.
-
----
-
-## 15. Câu hỏi thường gặp (FAQ)
-
-**Q1: Tôi có thể sử dụng DevSpeak AI hoàn toàn miễn phí không?**  
-*Trả lời*: Hoàn toàn miễn phí! Ứng dụng chạy trên máy cá nhân của bạn với Mock AI Provider tích hợp sẵn mà không tốn bất kỳ chi phí nào.
-
-**Q2: Hệ thống có chấm điểm phát âm tiếng Anh từng âm tiết không?**  
-*Trả lời*: Phiên bản hiện tại tập trung vào nhận diện giọng nói thành văn bản để đánh giá tính chính xác về kỹ thuật, ngữ pháp và cấu trúc câu trả lời. Tính năng phân tích ngữ âm chi tiết (Phonetic scoring) được lên kế hoạch trong các phiên bản tương lai.
-
-**Q3: Tôi có thể tự thêm câu hỏi phỏng vấn của riêng mình vào hệ thống không?**  
-*Trả lời*: Hiện tại hệ thống đi kèm 26 câu hỏi tiêu chuẩn được định nghĩa sẵn. Tính năng cho phép ứng viên tự tạo câu hỏi tùy chỉnh thông qua giao diện đang được đội ngũ phát triển xây dựng.
-
-**Q4: Điểm số Overall Score được tính toán như thế nào?**  
-*Trả lời*: Điểm tổng hợp được tính theo trọng số: $50\%$ Độ chính xác kỹ thuật (Technical Accuracy) + $30\%$ Cấu trúc mạch lạc (STAR / Clarity) + $20\%$ Ngữ pháp & Văn phong tiếng Anh (Grammar & Tone).
+DevSpeak AI features a complete bilingual interface:
+- Click the **EN / VI** toggle in the top-right header:
+  - **VI**: Navigation labels, dashboard headers, instructions, and metric tooltips switch to Vietnamese.
+  - **EN**: Interface displays in 100% international English.
+- **Technical Content Preservation**: Technical interview prompts, scoring rubrics, follow-up questions, and expert model answers remain in English across both modes to ensure authentic interview immersion.
+- Your language preference persists across sessions via browser `localStorage`.
 
 ---
 
-## 16. Các giới hạn hiện tại & Tính năng đang phát triển
+## 13. Troubleshooting Common Issues
 
-Với tinh thần minh bạch kỹ thuật, tài liệu này xác nhận rõ các điểm còn giới hạn của phiên bản hiện tại:
+### Issue 1: Header status indicator shows amber "Offline"
+- **Cause**: Frontend cannot establish connection with the FastAPI backend `/readyz` endpoint.
+- **Resolution**:
+  1. Click the status badge to trigger an immediate probe retry.
+  2. For local environments, ensure Docker containers or Kubernetes pods are running: `docker compose ps` or `kubectl get pods -n devspeak`.
+  3. Ensure network firewalls do not block port `8000`.
 
-1. **Bảng lịch sử phỏng vấn chi tiết (Session History UI)**:
-   - Cơ sở dữ liệu PostgreSQL đã lưu trữ đầy đủ toàn bộ lịch sử các lần nộp bài (`interview_attempts`) và tin nhắn hội thoại (`interview_messages`).
-   - Các chỉ số tổng quát (Tổng số câu hoàn thành, Streak, XP) đã được hiển thị trên Dashboard. Tuy nhiên, màn hình giao diện chuyên biệt dạng bảng để xem lại từng bài nộp cũ trong quá khứ đang được hoàn thiện ở cột mốc tiếp theo.
-2. **Nhận diện giọng nói trên Firefox**:
-   - Do giới hạn kiến trúc của trình duyệt Firefox, người dùng Firefox được khuyến nghị gõ văn bản hoặc chuyển sang Chrome/Edge để dùng Micro.
-3. **Mã sửa lỗi bảo mật đang chờ cập nhật (Defect SEC-01)**:
-   - Đội ngũ bảo mật đã phát hiện và ghi nhận lỗ hổng kiểm tra quyền đối với các phiên phỏng vấn ở chế độ ẩn danh trong tài liệu [DEFECT_BACKLOG.md](file:///d:/DEVSPEAK-AI/docs/DEFECT_BACKLOG.md). Bản vá bảo mật đang được triển khai.
+### Issue 2: Microphone button indicates "Speech recognition is not supported"
+- **Cause**: Active browser (e.g., Firefox) does not implement the Web Speech API standard.
+- **Resolution**: Switch to Google Chrome, Microsoft Edge, or Safari for voice input, or utilize standard keyboard input.
+
+### Issue 3: Microphone access denied error
+- **Cause**: Browser microphone permissions were previously blocked for the domain.
+- **Resolution**: Click the lock/tune icon in the browser address bar, reset **Microphone** permission to **Allow**, refresh (`F5`), and retry.
+
+### Issue 4: "Submit Answer" button remains disabled
+- **Cause**: The current draft is shorter than 10 characters or exceeds the 4,000-character boundary.
+- **Resolution**: Review the live character counter beneath the textarea and expand your technical details.
+
+---
+
+## 14. Privacy Policy & Local-First Security Architecture
+
+DevSpeak AI is architected with a strict **Security-First** and **Local-First** model:
+- **Zero Plaintext Credentials**: Passwords are cryptographically salted and hashed using **Argon2id** (memory-hard algorithm resistant to GPU/ASIC brute-force).
+- **Session Isolation**: Authentication tokens are signed via stateless JWTs; database records enforce strict user ownership checks.
+- **Offline Mock Scoring Engine**: By default, the application runs using an offline deterministic Heuristic Mock AI provider. No candidate responses, transcripts, or personal data leave the cluster or workstation.
+- **Zero Third-Party Model Storage**: When configured with Google Gemini (`AI_PROVIDER=gemini`), inputs are evaluated in-transit without retention or training usage.
+
+---
+
+## 15. Frequently Asked Questions (FAQ)
+
+**Q1: Is DevSpeak AI completely free to use locally?**  
+*Answer*: Yes. The platform operates 100% locally with zero external API dependencies or subscription costs when using the built-in Heuristic Mock provider.
+
+**Q2: Does the platform evaluate individual phonetic pronunciation errors?**  
+*Answer*: The current release focuses on speech-to-text transcription accuracy, technical vocabulary selection, grammatical syntax, and structural logic. Advanced phonetic waveform analysis is slated for a future milestone.
+
+**Q3: Can I add custom interview questions to the platform?**  
+*Answer*: The application ships with 26 standardized IT and DevOps scenarios. An administrative UI for custom question authoring is planned for the v1.2.0 release.
+
+**Q4: How is the Overall Score calculated?**  
+*Answer*: Overall score is a weighted composite: $50\%$ Technical Accuracy + $30\%$ Clarity & STAR Structure + $20\%$ English Grammar & Professional Tone.
+
+---
+
+## 16. Current Capabilities & Upcoming Roadmap
+
+In the spirit of engineering transparency, current capabilities and upcoming milestones are documented below:
+
+1. **Persistent History Storage**:
+   - The PostgreSQL database persists all candidate submissions (`interview_attempts`) and multi-turn exchanges (`interview_messages`).
+   - Summary statistics (Total completed, Streak, XP) are visualized on the Dashboard; a tabular session history audit screen is scheduled for v1.1.0.
+2. **Multi-Turn Interview Chat Component**:
+   - The multi-turn conversational API and Python SDK are fully implemented in the backend. An interactive multi-turn chat widget in the frontend is scheduled for v1.1.0.
+3. **Speech Recognition on Firefox**:
+   - Firefox users should utilize keyboard input until Mozilla ships standardized Web Speech API support.

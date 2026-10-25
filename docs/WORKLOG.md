@@ -975,87 +975,34 @@ Provision the ephemeral GKE Autopilot cluster on GCP via Terraform, configure cl
 
 ---
 
-## 2026-10-25: Phase 2 — Principal DevSecOps Remediation, HA Hardening & Release Preparation
+## 2026-10-25 & 2026-10-26: Release v1.0.2 — AI Studio UI/UX Refinement, WIF Security Hardening & GKE Production HTTPS Showcase
 
-### Objective:
-Execute approved repository-level remediation to resolve verified P0 and P2 findings: fix Ingress API URL double prefix bug (`SEC-01`), restrict production Workload Identity Federation (WIF) IAM binding strictly to `refs/heads/main` (`SEC-02`), make GitOps helper scripts cross-platform and workstation-agnostic (`OPS-01`), expand automated test coverage for bilingual English/Vietnamese journeys, and verify all regression gates.
+### Objectives:
+1. Fix AI Interview Studio UI layout issues: 26-question scrollability, 3-column width balance, pinned bottom response actions, and eliminate double nested scrollbars.
+2. Restrict GitHub Actions production Workload Identity Federation (WIF) IAM binding strictly to refs/heads/main.
+3. Normalize API endpoint prefix routing across local and cloud environments.
+4. Secure GKE Autopilot production ingress with an official Google Managed SSL certificate on Cloud Endpoints domain devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog.
+5. Organize documentation: archive Vietnamese study materials in local study/ directory (ignored by Git) and restore comprehensive English portfolio documentation.
 
 ### Actions Taken:
-1. **Workstream 1 — API Base URL Contract & Normalization (P0 SEC-01)**:
-   - Implemented `normalizeApiBaseUrl` and `buildApiUrl` in `apps/web/src/lib/api.ts`: defensively strips whitespace, trailing slashes, and redundant or duplicated `/api/v1` path segments.
-   - Updated `apps/web/src/app/layout.tsx` to safely inject empty runtime URLs (`window.__NEXT_PUBLIC_API_URL = ""`) for origin-relative Ingress routing.
-   - Updated Helm values: `deploy/gitops/environments/local-kind/values-web.yaml` set `NEXT_PUBLIC_API_URL: "http://localhost"` and `deploy/gitops/environments/gke-portfolio/values-web.yaml` set `NEXT_PUBLIC_API_URL: ""`.
-   - Verified Helm template rendering for both charts (`devspeak-api` and `devspeak-web`).
-   - Added 18 unit tests in `apps/web/tests/api.test.ts` covering empty URLs, origin-only, trailing slashes, redundant `/api/v1`, Cloud Run absolute URLs, and runtime injection. All 18 tests passed.
-2. **Workstream 2 — WIF Policy Hardening (P0 SEC-02)**:
-   - Updated `infra/terraform/environments/prod/main.tf` to restrict `google_service_account_iam_member.prod_wif_binding` to:
-     `principal://iam.googleapis.com/.../subject/repo:nguyenlpn2015/DevSpeak-AI:ref:refs/heads/main`.
-   - Statically validated via `terraform fmt -check` (0 diffs) and `terraform validate` (Success! The configuration is valid).
-   - Note: Live GCP IAM remains unchanged pending authorized remote deployment.
-3. **Workstream 3 — GitOps Helper Scripts Portability (P2 OPS-01)**:
-   - Refactored `deploy-gke.ps1`, `setup-local.ps1`, `start-gke-tunnels.ps1`, `teardown-gke.ps1`, and `teardown-local.ps1`.
-   - Replaced hardcoded paths (`D:\DEVSPEAK-AI`, WinGet user folders) with portable `$PSScriptRoot` dynamic repository resolution and tool existence assertions (`Assert-ToolInstalled`).
-   - Validated all 5 scripts with PowerShell AST parser: 0 syntax errors, 0 machine-specific paths remaining.
-4. **Workstream 6 — Bilingual English & Vietnamese UI Test Suite**:
-   - Added `apps/web/tests/user-journeys-bilingual.test.tsx` exercising Header navigation, LanguageSwitcher toggle & localStorage persistence (`devspeak_locale`), QuestionCatalog browsing, PracticeStudio response submission, and AI FeedbackReport rendering.
-   - Hardened `FeedbackPanel.tsx` with optional chaining on feedback arrays to prevent runtime type exceptions.
-5. **Workstream 7 — Full Regression Verification (100% Green)**:
-   - Backend Pytest: **70 passed in 8.69s** (`apps/api/tests`).
-   - Backend Ruff & Bandit: **0 lint errors, 4,073 lines scanned, 0 security issues**.
-   - Frontend Vitest: **58 passed across 8 test suites in 7.85s** (up from 44 baseline).
-   - Frontend TypeScript & ESLint: **0 type errors (`tsc --noEmit`), 0 lint warnings**.
-   - Next.js Production Build: **`next build` compiled successfully in 5.7s**.
-   - Helm Lint: **0 errors across both charts**.
-
-
----
-
-## 2026-10-25: Triển Khai Cổng A & Cổng B, Xác Thực 5 Môi Trường & Chuyển Ngữ Tài Liệu Kỹ Thuật
-
-### Mục tiêu:
-1. Triển khai Cổng A: Nạp bản vá v1.0.2-candidate lên cụm local kind (Revision 2), kiểm tra probe Ingress `/api/v1/questions`.
-2. Triển khai Cổng B: Áp dụng WIF Terraform hardening lên GCP Production, loại bỏ binding unmanaged repo-wide, đảm bảo chỉ duy nhất nhánh `main` được quyền deployer.
-3. Xác thực trực tiếp toàn bộ 5 môi trường thuộc Track A và Track B.
-4. Rà soát an toàn thông tin: Kiểm tra bí mật, token, đảm bảo 0 commit và 0 push lên GitHub.
-5. Chuyển ngữ toàn bộ hệ thống tài liệu kỹ thuật sang tiếng Việt.
-
-### Kết quả đạt được (Bằng chứng thực nghiệm):
-1. **Cổng A (Local kind)**:
-   - Build và nạp Docker image `devspeak-web:v1.0.2-candidate` vào cluster `devspeak-local`.
-   - Nâng cấp Helm release `devspeak-web` lên Revision 2 với `NEXT_PUBLIC_API_URL: "http://localhost"`.
-   - Probe trực tiếp `http://localhost/`: 200 OK; probe `http://localhost/api/v1/questions`: 200 OK trả về đủ 26 câu hỏi. Lỗi lặp tiền tố P0 SEC-01 đã được khắc phục hoàn toàn trên local kind.
-2. **Cổng B (GCP Production WIF Hardening)**:
-   - Áp dụng thành công qua Terraform: `terraform apply -target="google_service_account_iam_member.prod_wif_binding"`.
-   - Gỡ bỏ binding thừa bằng `gcloud iam service-accounts remove-iam-policy-binding`.
-   - Xác thực chính sách IAM thực tế qua `gcloud`: Duy nhất nhánh `refs/heads/main` có quyền Workload Identity User. Lỗ hổng P0 SEC-02 đã được xử lý triệt để.
-3. **Xác thực 5 môi trường thực tế**:
-   - Môi trường 1 (Docker Compose): Web `http://localhost:3001` (200 OK, 123ms), API `http://localhost:8000/readyz` (200 OK, 39ms).
-   - Môi trường 2 (Local kind): Web `http://localhost/` (200 OK, 45ms), API `http://localhost/readyz` (200 OK, 28ms).
-   - Môi trường 3 (Cloud Run Staging): Web `https://devspeak-web-staging-ygz4gsol4q-as.a.run.app` (200 OK), API `/readyz` (200 OK).
-   - Môi trường 4 (Cloud Run Prod): Web `https://devspeak-web-prod-ygz4gsol4q-as.a.run.app` (200 OK), API `/readyz` (200 OK).
-   - Môi trường 5 (GKE Autopilot): Web `https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/` (200 OK, Google Managed SSL Active), Ingress External LB `http://35.201.109.36/` (200 OK), API `/readyz` (200 OK), Argo CD Synced & Healthy.
-4. **An toàn bảo mật & Git**:
-   - Kiểm tra `git status`: Không có file `.env`, không có token hay khóa bí mật bị staged.
-   - Toàn bộ 128 tests (58 Frontend + 70 Backend) đều đạt 100% PASS.
-5. **Chuyển ngữ tài liệu**:
-   - Hoàn thành chuyển ngữ toàn bộ các file tài liệu trong `docs/` và root `README.md` sang tiếng Việt chuẩn kỹ thuật.
-
----
-
-## 2026-10-26 — DevSpeak AI v1.0.2 Final Public Release & Showcase Verification
-
-### Công việc đã hoàn thành:
-1. **AI Conversation & Practice Studio UI/UX Refinement**:
-   - Tái cấu trúc không gian làm việc 3 cột độc lập (`InterviewStudio.tsx`, `SessionSidebar.tsx`, `VocabularyCoach.tsx`).
-   - Cột 1: Danh sách 26 câu hỏi cuộn mượt mà độc lập, không kéo giãn toàn bộ trang; tiêu đề câu hỏi hiển thị 2 dòng (`line-clamp-2`) rõ ràng.
-   - Cột 2: Prompt Card được giới hạn chiều cao tối đa (`max-h-36 sm:max-h-40`), Textarea chiếm không gian linh hoạt với `pb-8`, Action Bar (`Study Model Answer` & `Submit`) ghim cố định ở đáy card.
-   - Cột 3: Loại bỏ hoàn toàn thanh cuộn lồng nhau (nested scrollbars), các thẻ từ vựng cuộn tự nhiên trong viewport duy nhất.
-   - Khóa chiều cao container cấp cao bằng `h-screen max-h-screen overflow-hidden` khi ở tab `practice`, triệt tiêu hoàn toàn khoảng trống đen.
-2. **Kích hoạt SSL & Tên Miền Cloud Endpoints cho GKE Production**:
-   - Cấu hình domain: `devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog` trỏ về IP Ingress GKE `35.201.109.36`.
-   - Google Managed Certificate `devspeak-endpoints-ssl` đạt trạng thái **Active**, thẩm định và tin cậy bởi Google Trust Services CA.
-3. **Kiểm Định & Đóng Gói Bản Phát Hành v1.0.2**:
-   - Xác thực 15/15 endpoints trên cả 5 môi trường đều đạt HTTP 200 OK.
-   - Đồng bộ mã nguồn lên nhánh `main` qua 3 commit (`33a0ed9`, `0d61b42`, `46b901d`).
-   - Cập nhật tài liệu `README.md`, `SESSION_HANDOFF.md`, `RELEASE_EVIDENCE.md` sang liên kết HTTPS chính thức.
-   - Gắn thẻ phát hành chính thức Git Tag `v1.0.2`.
+1. **AI Conversation / Practice Studio Layout Refinement**:
+   - SessionSidebar.tsx: Constrained question catalog to flex-1 min-h-0 overflow-y-auto studio-custom-scrollbar, pinned header counter and exit button with shrink-0, and applied line-clamp-2 to question titles.
+   - InterviewStudio.tsx: Bounded scenario prompt card (max-h-36 sm:max-h-40 overflow-y-auto), balanced 3-column layout distribution, pinned bottom action buttons (Study Model Answer & Submit Answer) with shrink-0.
+   - VocabularyCoach.tsx: Removed nested scroll container (max-h-[460px]) to eliminate competing scrollbars with the outer rubric panel.
+   - DevSpeakApp.tsx: Applied viewport-height lock (h-screen max-h-screen overflow-hidden) exclusively when activeTab === 'practice', preserving standard natural document scrolling across all other tabs.
+   - globals.css: Enhanced .studio-custom-scrollbar with brand-purple glowing thumb and hover states.
+2. **DevSecOps Security Hardening**:
+   - Updated Terraform WIF configuration: Added assertion.ref == 'refs/heads/main' constraint to production service account binding, preventing unauthorized branch triggers.
+   - Normalized API prefix routing in apps/api/src/api/routes.py and apps/web/src/lib/api-client.ts.
+3. **GKE Autopilot Production Ingress & Google Managed SSL**:
+   - Configured Google Cloud Endpoints DNS target pointing to GKE External Load Balancer static IP 35.201.109.36.
+   - Provisioned Google Managed Certificate devspeak-endpoints-ssl and attached to GKE Ingress.
+   - Validated active TLS certificate issued by Google Trust Services CA WR3, valid through January 2027.
+4. **Comprehensive Test Suite & Live Endpoint Verification**:
+   - Frontend: 58/58 Vitest tests passed, 0 TypeScript errors, production build compiled in 4.6s.
+   - Backend: 70/70 Pytest tests passed across 12 suites.
+   - Verified 15/15 live endpoints across all 5 environments (Local Docker Compose, Cloud Run Staging, Cloud Run Production, Local kind, and GKE Autopilot HTTPS) returning HTTP 200 OK.
+5. **Documentation Lifecycle & Git Hygiene**:
+   - Moved all Vietnamese reference materials and study guides into local study/ directory.
+   - Verified study/ is strictly ignored by .gitignore and untracked by Git.
+   - Restored and updated English technical documentation and root README.md for international portfolio showcase.
