@@ -45,6 +45,10 @@ The project runs across 5 distinct environments to demonstrate different stages 
 | **4. Local Kubernetes (kind)** | Helm + NGINX Ingress | Web: [http://localhost/](http://localhost/)<br>API: [http://localhost/api/v1/questions](http://localhost/api/v1/questions)<br>Probe: [http://localhost/readyz](http://localhost/readyz) | 🟢 Healthy | Local GitOps simulation using kind cluster `devspeak-local` with Ingress-NGINX. |
 | **5. GCP GKE Autopilot (Prod)** | Helm + Argo CD + Google SSL | Web: [https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/](https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/)<br>Probe: [https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/readyz](https://devspeak.endpoints.project-12679df0-893b-4260-924.cloud.goog/readyz) | 🟢 Healthy | Google Managed SSL Certificate, External HTTP(S) Cloud Load Balancer, Argo CD GitOps controller, HPA autoscaling (2 replicas each). |
 
+> [!TIP]
+> **Single Unified Container Image Architecture:**
+> All 5 environments (Track A: Docker Compose, Staging, Production; Track B: local kind, GKE Autopilot) consume the **exact same unified, multi-stage container images** (`devspeak-api` & `devspeak-web`). Through dynamic server-side runtime injection (`window.__NEXT_PUBLIC_API_URL`), the frontend bundle is built once and dynamically targets the correct backend across Cloud Run, GKE Ingress, kind, and Docker Compose with zero code drift.
+>
 > [!NOTE]
 > **Deterministic Mock Evaluation & Privacy Policy:**
 > To guarantee deterministic grading, zero ongoing LLM billing costs, and candidate privacy (no candidate voice transcripts or technical drafts sent to commercial AI vendors), public demos run using DevSpeak AI's **Deterministic Heuristic Mock Provider** by default. Live Google Gemini evaluation can be toggled in self-hosted instances with `AI_PROVIDER=gemini` and a `GEMINI_API_KEY`.
@@ -203,7 +207,15 @@ apps/api/.venv/Scripts/python -m pytest apps/api/tests
 npm --prefix apps/web test
 ```
 
-### 5. Stopping the stack safely
+### 5. Automated 5-environment smoke health probes
+```bash
+# Verify health across all 5 live environments in 5 seconds (non-destructive)
+powershell -ExecutionPolicy Bypass -File deploy/gitops/scripts/smoke-test.ps1
+# or on Linux / macOS
+bash deploy/gitops/scripts/smoke-test.sh
+```
+
+### 6. Stopping the stack safely
 ```bash
 docker compose down
 ```
