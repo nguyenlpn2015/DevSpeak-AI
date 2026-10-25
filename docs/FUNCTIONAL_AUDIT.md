@@ -31,9 +31,9 @@
 
 ### Dimension 1: Application Startup & Health Endpoints
 - **User Action**: Automated cluster probe, load balancer liveness/readiness probe, or developer health inspection.
-- **Frontend Component**: [Header.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/Header.tsx) (Live System Status indicator pill).
+- **Frontend Component**: [Header.tsx](../apps/web/src/components/Header.tsx) (Live System Status indicator pill).
 - **API Request**: `GET /healthz`, `GET /readyz`.
-- **Backend Service**: `health_check`, `readiness_check` in [main.py](file:///d:/DEVSPEAK-AI/apps/api/src/main.py#L161-L191).
+- **Backend Service**: `health_check`, `readiness_check` in [main.py](../apps/api/src/main.py#L161-L191).
 - **Database Operation**: None currently (Engine pool created at lifespan, but not queried during probe).
 - **Expected Response**: HTTP 200 OK with `status: ok` and `status: ready`, verifying DB engine pool connectivity.
 - **Actual Observed Result**:
@@ -47,7 +47,7 @@
 
 ### Dimension 2: Dashboard Navigation & Interactive Actions
 - **User Action**: Clicking navigation tabs (Dashboard, Question Bank, Flashcards, Vocab, Shadowing, Practice Studio, STAR Method), logging in, reviewing stats.
-- **Frontend Component**: [LinguaSidebar.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/LinguaSidebar.tsx), [LinguaFlowDashboard.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/LinguaFlowDashboard.tsx), [MetricCards.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/MetricCards.tsx).
+- **Frontend Component**: [LinguaSidebar.tsx](../apps/web/src/components/linguaflow/LinguaSidebar.tsx), [LinguaFlowDashboard.tsx](../apps/web/src/components/linguaflow/LinguaFlowDashboard.tsx), [MetricCards.tsx](../apps/web/src/components/linguaflow/MetricCards.tsx).
 - **API Request**: `GET /api/v1/progress/summary`, `GET /api/v1/questions`.
 - **Backend Service**: `ProgressService.get_progress_summary`, `QuestionCatalog.list_questions`.
 - **Database Operation**: Aggregation query over `interview_sessions` and `interview_attempts` filtered by `user_id`.
@@ -64,7 +64,7 @@
 
 ### Dimension 3: Question Bank Search, Filtering & Selection
 - **User Action**: Searching question catalog, filtering by Role (`devops`, `software_engineer`), Topic (`kubernetes`, `ci_cd`, `linux_sre`, etc.), and Difficulty (`junior`, `mid_level`, `senior`). Selecting a question to view details.
-- **Frontend Component**: [QuestionCatalog.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/QuestionCatalog.tsx), [QuestionDetailView.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/QuestionDetailView.tsx).
+- **Frontend Component**: [QuestionCatalog.tsx](../apps/web/src/components/QuestionCatalog.tsx), [QuestionDetailView.tsx](../apps/web/src/components/QuestionDetailView.tsx).
 - **API Request**: `GET /api/v1/questions?role={role}&topic={topic}&difficulty={difficulty}`, `GET /api/v1/questions/{id}`.
 - **Backend Service**: `QuestionCatalog.list_questions`, `QuestionCatalog.get_question`.
 - **Database Operation**: In-memory indexed catalog with 26 comprehensive IT/DevOps questions.
@@ -83,7 +83,7 @@
 
 ### Dimension 4: Answer Submission & AI Feedback Evaluation
 - **User Action**: Candidate types an English technical answer into the editor and submits for AI evaluation (or presses `Ctrl+Enter`).
-- **Frontend Component**: [InterviewStudio.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/InterviewStudio.tsx), [FeedbackPanel.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/FeedbackPanel.tsx), [FeedbackStudio.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/FeedbackStudio.tsx).
+- **Frontend Component**: [InterviewStudio.tsx](../apps/web/src/components/studio/InterviewStudio.tsx), [FeedbackPanel.tsx](../apps/web/src/components/studio/FeedbackPanel.tsx), [FeedbackStudio.tsx](../apps/web/src/components/FeedbackStudio.tsx).
 - **API Request**: `POST /api/v1/interviews/evaluate` (standalone) or `POST /api/v1/interviews/sessions/{id}/attempts`.
 - **Backend Service**: `AIProviderInterface.evaluate_answer` (via `MockAIProvider` or `GeminiAIProvider`), `InterviewService.submit_attempt`.
 - **Database Operation**: `INSERT INTO interview_attempts` with `session_id`, `user_answer`, `feedback_snapshot` (JSONB), and `overall_score`.
@@ -100,7 +100,7 @@
 
 ### Dimension 5: Technical Vocabulary, STAR Guidance & Flashcards
 - **User Action**: Candidate clicks technical vocabulary tokens or STAR guidance chips to auto-insert templates into draft answer; practices technical terms in Flashcards with audio TTS.
-- **Frontend Component**: [STARBuilder.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/STARBuilder.tsx), [VocabularyCoach.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/VocabularyCoach.tsx), [FlashcardsView.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/FlashcardsView.tsx).
+- **Frontend Component**: [STARBuilder.tsx](../apps/web/src/components/studio/STARBuilder.tsx), [VocabularyCoach.tsx](../apps/web/src/components/studio/VocabularyCoach.tsx), [FlashcardsView.tsx](../apps/web/src/components/linguaflow/FlashcardsView.tsx).
 - **API Request**: Client-side execution using Question Rubric metadata + Web Speech API `window.speechSynthesis`.
 - **Backend Service**: N/A (Client-side interactive coaching tools).
 - **Database Operation**: None.
@@ -116,7 +116,7 @@
 
 ### Dimension 6: Text Interview Session Lifecycle (Multi-Turn Chat)
 - **User Action**: Candidate enters conversational interview mode; AI interviewer introduces the topic; candidate submits consecutive turns; AI probes deeper and concludes the interview on Turn 3.
-- **Frontend Component**: [InterviewStudio.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/InterviewStudio.tsx), chat dialogue thread.
+- **Frontend Component**: [InterviewStudio.tsx](../apps/web/src/components/studio/InterviewStudio.tsx), chat dialogue thread.
 - **API Request**:
   - `POST /api/v1/interviews/sessions` (Create session)
   - `GET /api/v1/interviews/sessions/{id}/messages` (Initialize dialogue)
@@ -139,7 +139,7 @@
 
 ### Dimension 7: Authentication & Authorization Security
 - **User Action**: Registering new candidate account, logging in, requesting protected profile, accessing private sessions.
-- **Frontend Component**: [AuthModal.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/auth/AuthModal.tsx), [AuthContext.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/context/AuthContext.tsx).
+- **Frontend Component**: [AuthModal.tsx](../apps/web/src/components/auth/AuthModal.tsx), [AuthContext.tsx](../apps/web/src/context/AuthContext.tsx).
 - **API Request**: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`.
 - **Backend Service**: `AuthService.register`, `AuthService.login`, `get_current_user`, `get_optional_user`.
 - **Database Operation**:
@@ -163,7 +163,7 @@
 
 ### Dimension 8: Data Persistence & Account Ownership
 - **User Action**: Candidate attempts practice questions across multiple days; logs out and logs back in; verifies session history and progress persistence.
-- **Frontend Component**: [LinguaFlowDashboard.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/LinguaFlowDashboard.tsx), [SessionSidebar.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/SessionSidebar.tsx).
+- **Frontend Component**: [LinguaFlowDashboard.tsx](../apps/web/src/components/linguaflow/LinguaFlowDashboard.tsx), [SessionSidebar.tsx](../apps/web/src/components/studio/SessionSidebar.tsx).
 - **API Request**: `GET /api/v1/progress/summary`, `GET /api/v1/interviews/sessions`.
 - **Backend Service**: `ProgressService`, `InterviewService`, `InterviewRepository`.
 - **Database Operation**: Foreign key constraints: `interview_sessions.user_id -> users.id (ON DELETE CASCADE)`, `interview_attempts.session_id -> interview_sessions.id (ON DELETE CASCADE)`.
@@ -179,13 +179,13 @@
 
 ### Dimension 9: English / Vietnamese Bilingual Localization
 - **User Action**: Clicking the Language Switcher in the top header or mobile menu to toggle between English and Tiếng Việt.
-- **Frontend Component**: [LanguageSwitcher.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/LanguageSwitcher.tsx), [LanguageContext.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/i18n/LanguageContext.tsx).
+- **Frontend Component**: [LanguageSwitcher.tsx](../apps/web/src/components/LanguageSwitcher.tsx), [LanguageContext.tsx](../apps/web/src/i18n/LanguageContext.tsx).
 - **API Request**: N/A (Client-side translation dictionary).
 - **Backend Service**: N/A.
 - **Database Operation**: None (`localStorage.getItem('devspeak_lang')`).
 - **Expected Response**: Instant UI string translation with 100% key parity across all screens and components.
 - **Actual Observed Result**:
-  - `tests/i18n.test.tsx` passed 9/9 tests verifying 100% key parity between [en.ts](file:///d:/DEVSPEAK-AI/apps/web/src/i18n/en.ts) and [vi.ts](file:///d:/DEVSPEAK-AI/apps/web/src/i18n/vi.ts).
+  - `tests/i18n.test.tsx` passed 9/9 tests verifying 100% key parity between [en.ts](../apps/web/src/i18n/en.ts) and [vi.ts](../apps/web/src/i18n/vi.ts).
   - **Defects Identified**:
     - `InterviewStudio.tsx`: Hardcoded English string `"Articulate clearly in English as if on an interview video call."` (line 290), `"Inserted into answer draft"` (line 95), and `"Clear your current answer draft?"` (line 117).
     - `AuthModal.tsx`: Hardcoded English validation errors (`"Please provide both email and password."`, `"Password must be at least 8 characters long."`).
@@ -198,7 +198,7 @@
 
 ### Dimension 10: Loading, Validation, Timeout & Error States
 - **User Action**: Submitting empty answers, network disconnect, slow AI provider response (> 30s), rate limits.
-- **Frontend Component**: Spinners, disabled button states, error banners in [InterviewStudio.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/InterviewStudio.tsx), [AuthModal.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/auth/AuthModal.tsx).
+- **Frontend Component**: Spinners, disabled button states, error banners in [InterviewStudio.tsx](../apps/web/src/components/studio/InterviewStudio.tsx), [AuthModal.tsx](../apps/web/src/components/auth/AuthModal.tsx).
 - **API Request**: All POST endpoints.
 - **Backend Service**: FastAPI custom exception handlers: `ai_rate_limit_handler` (429), `ai_timeout_handler` (504), `ai_config_handler` (503), `ai_provider_error_handler` (502), `global_exception_handler` (500).
 - **Database Operation**: Transactions rolled back on failure; no orphaned records.
@@ -216,7 +216,7 @@
 ### Dimension 11: Database Migrations & Schema Seeding
 - **User Action**: Deploying backend or starting Docker container; automatic Alembic migration execution.
 - **Frontend Component**: N/A.
-- **API Request**: Executed via [entrypoint.sh](file:///d:/DEVSPEAK-AI/apps/api/entrypoint.sh) before Uvicorn starts.
+- **API Request**: Executed via [entrypoint.sh](../apps/api/entrypoint.sh) before Uvicorn starts.
 - **Backend Service**: Alembic migration runner (`alembic upgrade head`).
 - **Database Operation**:
   - `0001_initial_sessions_and_attempts` -> tables `interview_sessions`, `interview_attempts`.
@@ -254,7 +254,7 @@
 ### Dimension 13: Continuous Integration & DevSecOps Quality Gates
 - **User Action**: Git push or PR to `main` branch.
 - **Frontend Component**: N/A.
-- **API Request**: GitHub Actions workflow runner ([.github/workflows/ci.yml](file:///d:/DEVSPEAK-AI/.github/workflows/ci.yml)).
+- **API Request**: GitHub Actions workflow runner ([.github/workflows/ci.yml](../.github/workflows/ci.yml)).
 - **Backend Service**: Automated jobs: `secret-scan` (Gitleaks), `backend-quality` (Ruff, Bandit, pip-audit, Alembic, Pytest), `frontend-quality` (npm ci, tsc, eslint, vitest, next build).
 - **Database Operation**: SQLite in-memory test database for zero-external-dependency CI.
 - **Expected Response**: All jobs complete within timeout limits; any violation blocks merge.
@@ -286,7 +286,7 @@
 
 ### Dimension 15: Responsive Layout Across Desktop & Mobile
 - **User Action**: Candidate accesses application from desktop monitor (1920x1080), laptop (1366x768), tablet (768px), or mobile device (375px).
-- **Frontend Component**: [LinguaSidebar.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/LinguaSidebar.tsx), [LinguaFlowDashboard.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/LinguaFlowDashboard.tsx), [InterviewStudio.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/InterviewStudio.tsx).
+- **Frontend Component**: [LinguaSidebar.tsx](../apps/web/src/components/linguaflow/LinguaSidebar.tsx), [LinguaFlowDashboard.tsx](../apps/web/src/components/linguaflow/LinguaFlowDashboard.tsx), [InterviewStudio.tsx](../apps/web/src/components/studio/InterviewStudio.tsx).
 - **API Request**: N/A (CSS layout).
 - **Backend Service**: N/A.
 - **Database Operation**: None.

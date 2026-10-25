@@ -32,9 +32,9 @@
   - OWASP API Security Top 10: **API1:2023 — Broken Object Level Authorization (BOLA)**
   - CWE: **CWE-639: Authorization Bypass Through User-Controlled Key** / **CWE-285: Improper Authorization**
 - **Affected Files**:
-  - [service.py](file:///d:/DEVSPEAK-AI/apps/api/src/modules/interviews/service.py#L103) (lines 103, 194, 250, 315)
-  - [repository.py](file:///d:/DEVSPEAK-AI/apps/api/src/modules/interviews/repository.py#L69-L72) (lines 69–72)
-  - [schemas.py](file:///d:/DEVSPEAK-AI/apps/api/src/modules/interviews/schemas.py#L29-L41) (missing `user_id` field)
+  - [service.py](../apps/api/src/modules/interviews/service.py#L103) (lines 103, 194, 250, 315)
+  - [repository.py](../apps/api/src/modules/interviews/repository.py#L69-L72) (lines 69–72)
+  - [schemas.py](../apps/api/src/modules/interviews/schemas.py#L29-L41) (missing `user_id` field)
 - **Description & Security Impact**:
   When an authenticated candidate creates a practice session, the session is associated with their `user_id`. However:
   1. Any unauthenticated caller can call `GET /api/v1/interviews/sessions` with **zero** `Authorization` header and receive a complete list of **all private sessions** across all registered candidates in the database.
@@ -73,7 +73,7 @@ with urllib.request.urlopen(req_chat) as r:
 ```
 
 #### Root Cause Analysis
-In [service.py](file:///d:/DEVSPEAK-AI/apps/api/src/modules/interviews/service.py):
+In [service.py](../apps/api/src/modules/interviews/service.py):
 ```python
 # Lines 103, 194, 250, 315:
 if session.user_id is not None and user_id is not None and session.user_id != user_id:
@@ -81,7 +81,7 @@ if session.user_id is not None and user_id is not None and session.user_id != us
 ```
 When an unauthenticated request arrives, `user_id` is `None`. Therefore, `user_id is not None` evaluates to `False`, causing the entire `if` condition to evaluate to `False`. The authorization check is completely bypassed!
 
-Furthermore, in [repository.py](file:///d:/DEVSPEAK-AI/apps/api/src/modules/interviews/repository.py#L69-L72):
+Furthermore, in [repository.py](../apps/api/src/modules/interviews/repository.py#L69-L72):
 ```python
 if user_id:
     base_query = base_query.where(InterviewSession.user_id == user_id)
@@ -116,7 +116,7 @@ When `user_id` is `None`, no filter is applied, leaking all sessions in the data
 ### DEFECT OPS-01: Incomplete Database Readiness Probe (P2 - Operational)
 
 - **Vulnerability Classification**: Reliability / Kubernetes Liveness & Readiness Probe Gap.
-- **Affected File**: [apps/api/src/main.py](file:///d:/DEVSPEAK-AI/apps/api/src/main.py#L175-L192)
+- **Affected File**: [apps/api/src/main.py](../apps/api/src/main.py#L175-L192)
 - **Description & Operational Impact**:
   `GET /readyz` is used by Docker Compose and Kubernetes orchestration to determine whether the `devspeak-api` service is ready to receive traffic. Currently, `/readyz` only checks in-memory `QuestionCatalog.count()` and `Settings.AI_PROVIDER`. It never executes a database query (`SELECT 1`) against the PostgreSQL connection pool. If PostgreSQL crashes, loses network connectivity, or exhausts its connection pool, `/readyz` continues returning HTTP 200 OK. Incoming candidate requests subsequently fail with unhandled 500 errors.
 
@@ -170,8 +170,8 @@ async def readiness_check(
 
 - **Classification**: Local Developer Experience & Offline CI Reliability.
 - **Affected Files**:
-  - [pyproject.toml](file:///d:/DEVSPEAK-AI/apps/api/pyproject.toml)
-  - [test_api_endpoints.py](file:///d:/DEVSPEAK-AI/apps/api/tests/integration/test_api_endpoints.py#L33)
+  - [pyproject.toml](../apps/api/pyproject.toml)
+  - [test_api_endpoints.py](../apps/api/tests/integration/test_api_endpoints.py#L33)
 - **Description & Developer Impact**:
   When a developer runs `pytest` in `apps/api` without explicitly prefixing `$env:AI_PROVIDER="mock"`, `test_readiness_endpoint_returns_200` fails with:
   `AssertionError: assert 'gemini' == 'mock'`
@@ -185,7 +185,7 @@ In `apps/api/tests/conftest.py` (or `pyproject.toml` pytest env section), explic
 ### DEFECT DEP-01: Vulnerabilities in Frontend Build-Time DevDependencies (P2 - Maintenance)
 
 - **Classification**: Software Supply Chain Security (SCA).
-- **Affected File**: [apps/web/package.json](file:///d:/DEVSPEAK-AI/apps/web/package.json)
+- **Affected File**: [apps/web/package.json](../apps/web/package.json)
 - **Description**:
   `npm audit` reports 11 vulnerabilities (3 moderate, 8 high) inside `braces`, `postcss`, and `postcss-selector-parser`.
   - GHSA-vfj7-8cjw-p6xm (High): `braces` vulnerable to stack exhaustion via deeply nested patterns.
@@ -202,7 +202,7 @@ In `apps/api/tests/conftest.py` (or `pyproject.toml` pytest env section), explic
 ### DEFECT I18N-01: Hardcoded English Strings in Interview Studio (P3 - Cosmetic)
 
 - **Classification**: Bilingual Internationalization Gap.
-- **Affected File**: [InterviewStudio.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/studio/InterviewStudio.tsx)
+- **Affected File**: [InterviewStudio.tsx](../apps/web/src/components/studio/InterviewStudio.tsx)
 - **Description**:
   1. Line 290: Hardcoded string `"Articulate clearly in English as if on an interview video call."`
   2. Line 95: Hardcoded toast string `"Inserted into answer draft"`
@@ -222,9 +222,9 @@ Update `en.ts` and `vi.ts` with exact translations.
 
 - **Classification**: Bilingual Internationalization Gap.
 - **Affected Files**:
-  - [AuthModal.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/auth/AuthModal.tsx#L34-L57)
-  - [LinguaSidebar.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/LinguaSidebar.tsx#L123-L126)
-  - [MetricCards.tsx](file:///d:/DEVSPEAK-AI/apps/web/src/components/linguaflow/MetricCards.tsx#L27-L57)
+  - [AuthModal.tsx](../apps/web/src/components/auth/AuthModal.tsx#L34-L57)
+  - [LinguaSidebar.tsx](../apps/web/src/components/linguaflow/LinguaSidebar.tsx#L123-L126)
+  - [MetricCards.tsx](../apps/web/src/components/linguaflow/MetricCards.tsx#L27-L57)
 - **Description**:
   1. `AuthModal.tsx`: Validation errors `"Please provide both email and password."` (line 34) and `"Password must be at least 8 characters long."` (line 39) are hardcoded in English.
   2. `LinguaSidebar.tsx`: Line 123 displays `${streakDays} Day Streak` and line 126 displays `${user.target_level} Level` in English when language is set to Vietnamese.
