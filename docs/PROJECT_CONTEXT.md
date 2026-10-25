@@ -1,62 +1,31 @@
-# Project Context: DevSpeak AI
+# Bối Cảnh Dự Án (Project Context): DevSpeak AI
 
-## 1. Product Vision
-DevSpeak AI is a specialized learning platform designed to help Information Technology (IT) and DevOps/Cloud engineers overcome the language and communication barriers that hinder their careers in global teams and international interviews.
+## 1. Tầm Nhìn Sản Phẩm (Product Vision)
+DevSpeak AI là nền tảng học tập và huấn luyện chuyên sâu, được thiết kế nhằm giúp các kỹ sư Công nghệ Thông tin (IT), DevOps, SRE và Điện toán Đám mây (Cloud) vượt qua rào cản ngôn ngữ và kỹ năng giao tiếp tiếng Anh — yếu tố cản trở sự nghiệp của họ khi tham gia vào các đội ngũ toàn cầu và phỏng vấn quốc tế.
 
-Instead of generic English learning (like Duolingo or general ESL courses), DevSpeak AI focuses directly on:
-- Technical articulation (explaining architecture, troubleshooting incidents, code review communication).
-- IT interviews (scenario-based DevOps/SRE questions, system design walkthroughs, behavioral STAR stories).
-- Pragmatic communication (conciseness, technical precision, confidence, professional tone).
+Thay vì học tiếng Anh giao tiếp đại trà (như Duolingo hay các khóa ESL chung chung), DevSpeak AI tập trung trực tiếp vào:
+- **Diễn đạt kỹ thuật (Technical Articulation)**: Trình bày kiến trúc hệ thống, giải trình các sự cố vận hành (incident post-mortem), và trao đổi trong quá trình code review.
+- **Phỏng vấn IT (IT Interviews)**: Các câu hỏi tình huống thực tế cho DevOps/SRE, các buổi phỏng vấn thiết kế hệ thống (System Design), và câu chuyện lãnh đạo theo phương pháp STAR.
+- **Giao tiếp thực tế (Pragmatic Communication)**: Sự cô đọng, độ chính xác về mặt thuật ngữ kỹ thuật, sự tự tin và văn phong chuyên nghiệp chuẩn quốc tế.
 
-## 2. Target Personas
-1. **DevOps / Cloud / SRE Engineer**: Needs to explain CI/CD pipelines, Kubernetes failure recovery, AWS/GCP architecture trade-offs, and incident post-mortems in fluent, structured English.
-2. **Software Developer (Backend / Frontend / Full-Stack)**: Needs to communicate technical design, articulate algorithmic complexity, answer system design prompts, and collaborate smoothly in agile ceremonies.
-3. **Junior / Early Career Engineer**: Struggles with interview anxiety and needs structured practice with high-frequency behavioral (STAR method) and foundational technical questions.
+## 2. Đối Tượng Người Dùng Mục Tiêu (Target Personas)
+1. **Kỹ sư DevOps / Cloud / SRE**: Cần giải thích quy trình CI/CD, cơ chế tự phục hồi sự cố trên Kubernetes (CrashLoopBackOff, OOMKilled), đánh đổi kiến trúc AWS/GCP, và báo cáo sự cố bằng tiếng Anh lưu loát, có cấu trúc rõ ràng.
+2. **Kỹ sư Phần mềm (Backend / Frontend / Full-Stack)**: Cần trình bày thiết kế kỹ thuật, phân tích độ phức tạp thuật toán, trả lời phỏng vấn System Design và cộng tác trơn tru trong các nghi thức Agile.
+3. **Kỹ sư Mới vào nghề / Đầu sự nghiệp (Junior)**: Cần giảm bớt nỗi sợ khi phỏng vấn thông qua việc luyện tập có hướng dẫn với các câu hỏi hành vi tần suất cao (STAR) và kiến thức kỹ thuật nền tảng.
 
-## 3. Scope Definition
+## 3. Phạm Vi Triển Khai (Scope Definition)
 
-### Milestone 1: MVP Scope (Current Goal)
-- **Question Bank Module**:
-  - Filter by role (`devops`, `cloud`, `backend`, `general_it`), topic (`docker`, `k8s`, `cicd`, `system_design`, `behavioral`), and difficulty (`junior`, `mid`, `senior`).
-  - Pre-seeded deterministic question set (30+ production-grade questions).
-- **Practice & Mock Interview Session**:
-  - Single-question practice & multi-turn mock interview simulation.
-  - Text-based input with instant response streaming.
-- **AI Feedback Engine**:
-  - Structured evaluation: Grammar/Spelling, Technical Vocabulary & Fluency, Clarity & Structure (e.g. STAR check), Technical Accuracy.
-  - Model Answer / Improved Answer generation.
-  - Recommended follow-up probe questions.
-- **Deterministic Offline / Non-AI Mode**:
-  - Available when AI API is unavailable, quotas run out, or in self-study offline mode.
-  - Displays rubric self-assessment and canonical sample answers.
-- **Identity & Data Isolation**:
-  - User registration, login, and session history isolation.
-- **Cost & Quota Controls**:
-  - Per-user daily question limits to avoid denial-of-wallet risks.
+### Track A: Nền Tảng Serverless Cloud-Native (GCP Cloud Run & Cloud SQL)
+- Triển khai FastAPI và Next.js 15 trên Google Cloud Run tự động scale-to-zero khi nhàn rỗi.
+- Kết nối Cloud SQL PostgreSQL 16 qua Unix Socket bảo mật, kích hoạt Point-In-Time Recovery (PITR).
+- Thiết lập quy trình CI/CD tự động bằng GitHub Actions thông qua Workload Identity Federation (WIF) không dùng key tĩnh.
 
-### Future Scope (Milestones 2+)
-- Speech-to-text (STT) and Text-to-speech (TTS) real-time interactive audio calls.
-- Kubernetes deployment with Argo CD and progressive rollouts.
-- Comprehensive observability (Prometheus/Grafana/OpenTelemetry).
-- Multi-tenancy and enterprise team training dashboards.
+### Track B: Nền Tảng Enterprise Kubernetes GitOps (kind & GKE Autopilot)
+- Cụm cục bộ: Kubernetes kind với NGINX Ingress Controller và cơ sở dữ liệu phát triển.
+- Cụm đám mây: GKE Autopilot khu vực `asia-southeast1`, quản lý vòng đời ứng dụng hoàn toàn qua GitOps với Argo CD v3.5.6.
+- Quy chuẩn hóa kiến trúc với Helm Charts cho API và Web, kích hoạt Horizontal Pod Autoscaler (HPA).
 
-## 4. Current State (Milestone 1 Core Loop Complete)
-- **Status as of October 2026**:
-  - **Backend (`apps/api`)**: FastAPI Modular Monolith fully functional with DeterministicMockAIProvider, 6 IT/DevOps seed questions, health/readiness probes, and 26/26 passing pytest tests.
-  - **Frontend (`apps/web`)**: Next.js 15 App Router, React 19, TypeScript, and Tailwind CSS. Implemented Question Bank Catalog with filtering, Practice Studio with live character/word limits & rubric aids, and Feedback Studio with score breakdown, granular analysis, benchmark model answers, and interviewer follow-up questions.
-  - **Resilience**: Client seamlessly connects to FastAPI backend (`http://127.0.0.1:8000`) and falls back to local deterministic evaluation if offline.
-  - **Quality Gates**: `tsc --noEmit` passing, `eslint` passing, `next build` static export passing (17.6 kB initial JS).
-  - **Planned Next**: Database persistence (PostgreSQL/SQLite session state machine) and multi-turn practice history.
-
-## 5. Non-Negotiable Constraints
-- **Security**: Zero secret exposure, parameterized SQL, strict schema validation at API boundary, sanitized logs without PII or tokens.
-- **Cost Efficiency**: Must run completely free in local development (using Docker / local mock providers). Cloud resources must only be created after explicit user approval and transparent cost estimation.
-- **Reliability**: Graceful fallback when AI providers experience rate limits, latency spikes, or outages.
-- **Evidence-Based Development**: Every milestone requires concrete test and verification outputs before being marked complete.
-
-## 6. Domain Glossary
-- **Session**: A continuous interview practice instance containing one or more Q&A turns.
-- **Turn**: A single interaction comprising: System Question -> User Answer -> AI Feedback & Follow-up.
-- **STAR Method**: Situation, Task, Action, Result framework used for behavioral interview evaluation.
-- **Mock AI Provider**: A deterministic, local test double simulating LLM responses for CI pipelines and automated testing without incurring cost or network dependencies.
-
+## 4. Các Ràng Buộc Bất Biến (Non-Negotiable Constraints)
+- **An toàn Bảo mật (Security First)**: Tuyệt đối không hardcode bí mật, token, private key hay commit file `.env` lên GitHub. Rà soát nghiêm ngặt toàn bộ biến môi trường.
+- **Tối ưu Chi phí (Local-First & FinOps)**: Ưu tiên thực thi cục bộ (Docker Compose, kind) và kiểm soát chặt chẽ ngân sách đám mây trong ngưỡng kế hoạch ($300 USD / 90 ngày với quỹ dự phòng an toàn).
+- **Phát triển Dựa trên Bằng chứng Thực tế (Evidence-Based)**: Không bao giờ công bố hoàn tất một tính năng hay cột mốc nếu chưa thực thi lệnh và kiểm tra bằng chứng thực tế từ console/log.

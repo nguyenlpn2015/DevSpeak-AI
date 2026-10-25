@@ -1,204 +1,76 @@
-# DevSpeak AI — Google Cloud Platform Master Implementation Plan
+# Kế Hoạch Triển Khai Tổng Thể Trên Google Cloud Platform (GCP Master Plan)
 
-**Project**: DevSpeak AI (GCP DevOps & DevSecOps Portfolio Evolution)  
-**Target Environment**: Google Cloud Platform (Cloud Run, Cloud SQL, Secret Manager, Artifact Registry, WIF)  
-**Execution Strategy**: Incremental, Evidence-Based, Budget-Governed (Phases 0 — 13)  
+**Dự Án**: DevSpeak AI (Nâng Cấp Hệ Thống DevSecOps & Cloud Platform Portfolio)  
+**Môi Trường Triển Khai**: Google Cloud Platform (Cloud Run, Cloud SQL, Secret Manager, Artifact Registry, WIF, GKE Autopilot, Argo CD)  
+**Chiến Lược Thực Thi**: Từng bước dựa trên bằng chứng kiểm định, quản trị ngân sách nghiêm ngặt (Giai đoạn 0 — 13).
 
 ---
 
-## 1. Master Phased Execution Roadmap
+## 1. Sơ Đồ Lộ Trình Triển Khai Tổng Thể
 
 ```mermaid
 flowchart TD
-    P0["Phase 0: Audit & Baseline [ACTIVE]"] --> P1["Phase 1: GCP Foundation & Budget Controls"]
-    P1 --> P2["Phase 2: Terraform IaC Foundation & Remote State"]
-    P2 --> P3["Phase 3: Container Hardening & Multi-Stage Builds"]
-    P3 --> P4["Phase 4: Artifact Registry & Image Lifecycle"]
-    P4 --> P5["Phase 5: Cloud SQL & Secret Manager Setup"]
-    P5 --> P6["Phase 6: Cloud Run Frontend & Backend Deployment"]
-    P6 --> P7["Phase 7: GitHub Actions CI/CD with WIF"]
-    P7 --> P8["Phase 8: Layered DevSecOps Controls"]
-    P8 --> P9["Phase 9: Cloud Logging, Monitoring & Alerts"]
-    P9 --> P10["Phase 10: Post-Deployment Smoke Verification"]
-    P10 --> P11["Phase 11: Drift Management & Disaster Recovery"]
-    P11 --> P12["Phase 12: Optional GKE Lab (Approval-Gated)"]
-    P12 --> P13["Phase 13: Final Portfolio Documentation & Sign-off"]
+    P0["Giai đoạn 0: Kiểm định & Thiết lập đường cơ sở [Xong]"] --> P1["Giai đoạn 1: Nền tảng GCP & Kiểm soát ngân sách [Xong]"]
+    P1 --> P2["Giai đoạn 2: Khởi tạo IaC Terraform & Remote State [Xong]"]
+    P2 --> P3["Giai đoạn 3: Đóng gói Container đa tầng & Bảo mật [Xong]"]
+    P3 --> P4["Giai đoạn 4: Artifact Registry & Vòng đời Image [Xong]"]
+    P4 --> P5["Giai đoạn 5: Thiết lập Cloud SQL & Secret Manager [Xong]"]
+    P5 --> P6["Giai đoạn 6: Triển khai Cloud Run Frontend & Backend [Xong]"]
+    P6 --> P7["Giai đoạn 7: CI/CD GitHub Actions với WIF Keyless [Xong]"]
+    P7 --> P8["Giai đoạn 8: Kiểm soát DevSecOps đa tầng [Xong]"]
+    P8 --> P9["Giai đoạn 9: Cloud Logging, Giám sát & Đo lường [Xong]"]
+    P9 --> P10["Giai đoạn 10: Kiểm thử khói tự động sau triển khai [Xong]"]
+    P10 --> P11["Giai đoạn 11: Quản lý sai lệch (Drift) & Khôi phục dữ liệu [Xong]"]
+    P11 --> P12["Giai đoạn 12: Mở rộng GKE Autopilot & Argo CD GitOps [Xong]"]
+    P12 --> P13["Giai đoạn 13: Bàn giao tổng thể & Nghiệm thu [Đang thực hiện]"]
 ```
 
 ---
 
-## 2. Phase-by-Phase Execution Breakdown
+## 2. Chi Tiết Các Giai Đoạn Thực Thi
 
-### Phase 0: Audit & Baseline (Current Phase)
-- **Objective**: Conduct deep filesystem and runtime audit; verify local tests; identify hard-coded localhost references; author architectural and cost specifications.
-- **Tasks**:
-  1. Audit Git status, remotes, branches, and staged files.
-  2. Run baseline Python tests (`pytest` 65 passed) and Web tests (`vitest` 44 passed, type-check, lint, build).
-  3. Audit environment variables by name without exposing secrets.
-  4. Verify container build assumptions and localhost URL hardcoding risks.
-  5. Author `docs/GCP_ARCHITECTURE.md`, `docs/COST_ESTIMATE.md`, `docs/THREAT_MODEL.md`, `docs/GCP_IMPLEMENTATION_PLAN.md`, and `docs/RELEASE_EVIDENCE.md`.
-- **Deliverables**: Complete 5-document Phase 0 architectural package.
-- **Verification Gate**: 100% test pass rate; zero billable resources created.
+### Giai đoạn 0: Kiểm Định & Thiết Lập Đường Cơ Sở
+- **Mục tiêu**: Rà soát hệ thống tệp và runtime cục bộ; xác thực bộ kiểm thử; xây dựng đặc tả kiến trúc và dự toán chi phí.
+- **Trạng thái**: 🟢 **Hoàn thành**
 
----
+### Giai đoạn 1: Thiết Lập Dự Án GCP & Kiểm Soát Ngân Sách
+- **Mục tiêu**: Khởi tạo dự án `project-12679df0-893b-4260-924`, chọn vùng `asia-southeast1` (Singapore), bật các API cần thiết (`run`, `sqladmin`, `secretmanager`, `artifactregistry`, `iam`, `container`).
+- **Trạng thái**: 🟢 **Hoàn thành**
 
-### Phase 1: GCP Project Foundation & Budget Controls
-- **Objective**: Establish the target GCP project, region, service APIs, and billing alerts.
-- **Tasks**:
-  1. Verify active GCP project ID and ensure billing account with $300 Free Trial is attached.
-  2. Select target region: `asia-southeast1` (Singapore) for low latency to Vietnam, or `us-central1` for maximum free tier eligibility.
-  3. Configure Google Cloud Budget Alert: $25.00/month threshold with notifications at 50%, 75%, 90%, 100%.
-  4. Enable required service APIs:
-     - `run.googleapis.com` (Cloud Run)
-     - `sqladmin.googleapis.com` (Cloud SQL)
-     - `secretmanager.googleapis.com` (Secret Manager)
-     - `artifactregistry.googleapis.com` (Artifact Registry)
-     - `iam.googleapis.com` (IAM)
-     - `cloudresourcemanager.googleapis.com` (Resource Manager)
-     - `iamcredentials.googleapis.com` (Workload Identity Federation)
-     - `logging.googleapis.com` & `monitoring.googleapis.com`
-- **Verification Gate**: Billing alerts configured; required APIs enabled with zero compute resources running.
+### Giai đoạn 2: Hạ Tầng Dưới Dạng Mã (Terraform IaC)
+- **Mục tiêu**: Xây dựng cấu trúc module Terraform tái sử dụng tại `infra/terraform/` với GCS remote state lưu trong bucket `devspeak-tf-state-project-12679df0-893b-4260-924`.
+- **Trạng thái**: 🟢 **Hoàn thành**
 
----
+### Giai đoạn 3 & 4: Đóng Gói Container & Artifact Registry
+- **Mục tiêu**: Đóng gói Docker đa tầng không chạy root (`appuser`, `nextjs`), thiết lập kho lưu trữ riêng tư `devspeak-docker` tại Singapore với chính sách dọn dẹp giữ 3 tag gần nhất.
+- **Trạng thái**: 🟢 **Hoàn thành**
 
-### Phase 2: Terraform IaC Foundation & Remote State
-- **Objective**: Build reusable, maintainable Terraform modules under `infra/terraform/` using GCS remote state.
-- **Structure**:
-  ```
-  infra/terraform/
-  ├── environments/
-  │   └── prod/
-  │       ├── main.tf
-  │       ├── variables.tf
-  │       ├── outputs.tf
-  │       ├── terraform.tfvars.example
-  │       └── backend.tf
-  └── modules/
-      ├── project_services/
-      ├── artifact_registry/
-      ├── service_accounts/
-      ├── secret_manager/
-      ├── cloud_sql/
-      ├── cloud_run/
-      └── monitoring/
-  ```
-- **Tasks**:
-  1. Create GCS remote state bucket `devspeak-tf-state` with uniform bucket-level access, public access prevention, and versioning.
-  2. Author modular Terraform declarations with strict variable types and descriptions.
-  3. Pin Google Cloud provider version (`hashicorp/google ~> 6.0`).
-  4. Run `terraform fmt`, `terraform validate`, and Checkov IaC security scan.
-- **Verification Gate**: `terraform validate` passes; Checkov returns 0 HIGH/CRITICAL issues; state bucket encrypted and private.
+### Giai đoạn 5 & 6: Triển Khai Cloud SQL & Cloud Run (Track A)
+- **Mục tiêu**:
+  - Khởi tạo Cloud SQL PostgreSQL 16 (`db-f1-micro`) với sao lưu hàng ngày và PITR 7 ngày.
+  - Lưu trữ khóa bảo mật trong Google Secret Manager.
+  - Triển khai Cloud Run Staging và Production với tính năng scale-to-zero.
+- **Trạng thái**: 🟢 **Hoàn thành** (Đã kiểm định hoạt động thực tế).
 
----
+### Giai đoạn 7 & 8: Tự Động Hóa CI/CD & DevSecOps Keyless WIF
+- **Mục tiêu**:
+  - Cấu hình Workload Identity Federation (WIF) thay thế toàn bộ khóa JSON tĩnh.
+  - Củng cố IAM Production chỉ cho phép nhánh `main` kích hoạt deployer.
+  - Tích hợp kiểm thử tự động, linting và quét lỗ hổng trong GitHub Actions.
+- **Trạng thái**: 🟢 **Hoàn thành & Đã củng cố bảo mật**
 
-### Phase 3: Container Hardening & Multi-Stage Optimization
-- **Objective**: Harden Dockerfiles for production Cloud Run deployment.
-- **Tasks**:
-  1. Optimize `apps/api/Dockerfile`: Non-root `appuser:10001`, Python stdlib healthcheck, Alembic auto-migration handling.
-  2. Optimize `apps/web/Dockerfile`: Non-root `nextjs:1001`, support Next.js standalone build (`output: 'standalone'`), dynamic runtime API URL resolution.
-  3. Ensure both containers respect the dynamic `$PORT` environment variable injected by Cloud Run.
-  4. Validate local builds: `docker build -t devspeak-api apps/api` and `docker build -t devspeak-web apps/web`.
-- **Verification Gate**: Containers build cleanly without root permissions; images run locally in standalone mode.
+### Giai đoạn 9 & 10: Giám Sát Vận Hành & Smoke Test Tự Động
+- **Mục tiêu**: Chuẩn hóa log có cấu trúc dạng JSON lên Cloud Logging, kiểm tra probe `/readyz` tự động sau mỗi lần deploy.
+- **Trạng thái**: 🟢 **Hoàn thành**
 
----
+### Giai đoạn 11 & 12: Mở Rộng Track B (GKE Autopilot + Argo CD)
+- **Mục tiêu**:
+  - Khởi tạo cụm GKE Autopilot `devspeak-gke-portfolio`.
+  - Triển khai Ingress NGINX và cài đặt Argo CD.
+  - Đồng bộ tự động Helm Chart từ GitOps repository.
+  - Khắc phục lỗi tiền tố `/api/v1` và cập nhật bản vá v1.0.2-candidate.
+- **Trạng thái**: 🟢 **Hoàn thành**
 
-### Phase 4: Artifact Registry & Image Lifecycle
-- **Objective**: Establish private Docker registry with cost-controlled retention policy.
-- **Tasks**:
-  1. Provision Artifact Registry repository `devspeak-docker` via Terraform module.
-  2. Configure cleanup policy: retain tagged images for 14 days, keep minimum 3 versions, automatically purge untagged images.
-  3. Grant `roles/artifactregistry.reader` to Cloud Run service accounts and `roles/artifactregistry.writer` to CI/CD deployer service account.
-- **Verification Gate**: Private registry created; push and pull verified using short-lived tokens.
-
----
-
-### Phase 5: Cloud SQL & Secret Manager Setup
-- **Objective**: Provision cost-bounded PostgreSQL database and secure credential storage.
-- **Tasks**:
-  1. Provision Cloud SQL PostgreSQL 16 on `db-f1-micro` with 10 GB SSD storage, automated daily backups, and no public IP.
-  2. Create database `devspeak` and application user `devspeak_user`.
-  3. Store secrets in Secret Manager:
-     - `devspeak-db-password`
-     - `devspeak-db-url`
-     - `devspeak-jwt-secret`
-     - `devspeak-gemini-api-key` (Optional; defaults to Mock)
-  4. Grant `roles/secretmanager.secretAccessor` to `devspeak-api-sa`.
-- **Verification Gate**: Secrets stored securely; database reachable only via Cloud SQL Auth Proxy; no credentials in Git.
-
----
-
-### Phase 6: Cloud Run Frontend & Backend Deployment
-- **Objective**: Deploy separate, scale-to-zero Cloud Run services for API and Web.
-- **Tasks**:
-  1. Deploy `devspeak-api`:
-     - Runtime SA: `devspeak-api-sa`
-     - Resource limits: 1 vCPU, 512 MiB RAM
-     - Scaling: `min_instances=0`, `max_instances=3`
-     - Environment: `AI_PROVIDER=mock`, `DATABASE_URL` linked to Secret Manager
-     - Cloud SQL Auth Proxy connection enabled
-     - Health probes configured to `/healthz` and `/readyz`
-  2. Deploy `devspeak-web`:
-     - Runtime SA: `devspeak-web-sa`
-     - Resource limits: 1 vCPU, 512 MiB RAM
-     - Scaling: `min_instances=0`, `max_instances=2`
-     - Environment: `NEXT_PUBLIC_API_URL` pointing to the deployed API Cloud Run HTTPS URL
-  3. Update `CORS_ORIGINS` in `devspeak-api` to accept traffic from the `devspeak-web` Cloud Run URL.
-- **Verification Gate**: Both Cloud Run URLs respond with HTTP 200 over HTTPS; frontend seamlessly communicates with backend.
-
----
-
-### Phase 7: GitHub Actions CI/CD with Workload Identity Federation (WIF)
-- **Objective**: Fully automated, keyless deployment pipeline.
-- **Tasks**:
-  1. Provision Workload Identity Pool `github-actions-pool` and Provider `github-actions-provider`.
-  2. Configure attribute mapping and strict repository assertion (`nguyenlpn2015/DevSpeak-AI`).
-  3. Update `.github/workflows/cd.yml`:
-     - Step 1: OIDC authentication via `google-github-actions/auth`.
-     - Step 2: Build & scan container images with Trivy.
-     - Step 3: Publish immutable images tagged with Git commit SHA.
-     - Step 4: Deploy Cloud Run revisions using image digests.
-     - Step 5: Execute post-deployment health check smoke tests.
-- **Verification Gate**: Pull request triggers CI test gate; push to `main` deploys to Cloud Run with zero service account keys stored in GitHub Secrets.
-
----
-
-### Phase 8: Layered DevSecOps Controls
-- **Objective**: Enforce security gates across source code, dependencies, containers, and IaC.
-- **Controls**:
-  - Source: Gitleaks, Bandit SAST, Ruff linter.
-  - Dependencies: `pip-audit`, `npm audit`.
-  - IaC: Checkov / Trivy config for Terraform manifests.
-  - Containers: Trivy vulnerability scanning (< 0 Critical/High).
-  - Supply Chain: Syft Software Bill of Materials (SBOM) generation.
-- **Verification Gate**: All security checks automated in CI; vulnerability exceptions documented in threat model.
-
----
-
-### Phase 9: Cloud Logging, Monitoring & Observability
-- **Objective**: Implement real-time monitoring and operational dashboards.
-- **Tasks**:
-  1. Create Cloud Monitoring Dashboard: Request rate, Latency p50/p95/p99, HTTP 4xx/5xx error rates, Active Cloud Run instances, and Database connections.
-  2. Configure Alert Policies: High error rate (> 5% for 5 min), Cloud Run container crash loop, Database connectivity failure.
-  3. Author `docs/OPERATIONS_RUNBOOK.md` covering incident response, secret rotation, and rollback procedures.
-- **Verification Gate**: Dashboard active in Cloud Monitoring; simulated error triggers alert notification.
-
----
-
-### Phase 10: Post-Deployment Smoke Verification
-- **Objective**: Verify end-to-end functionality of deployed cloud services.
-- **Test Scenarios**:
-  1. Frontend HTTPS connectivity and PWA assets.
-  2. Backend `/healthz` and `/readyz` probes.
-  3. Question bank browsing and filtering (26 questions).
-  4. Candidate registration, password hashing, and JWT issuance.
-  5. Multi-turn interview chat turn execution and persistence in Cloud SQL.
-  6. Cold-start latency verification (< 3.0s).
-  7. Verification of scale-to-zero when idle (0 instances).
-- **Verification Gate**: All smoke tests pass; results captured in `docs/RELEASE_EVIDENCE.md`.
-
----
-
-### Phase 11 — 13: Operations, Advanced GKE Lab & Documentation
-- **Phase 11**: Terraform drift detection (`terraform plan -detailed-exitcode`), revision rollback demonstration, and database backup verification.
-- **Phase 12**: Optional, approval-gated GKE Autopilot lab design (strictly guarded by user cost approval).
-- **Phase 13**: Final portfolio documentation, architecture diagrams, and release evidence sign-off.
+### Giai đoạn 13: Bàn Giao Kỹ Thuật & Nghiệm Thu Sản Phẩm
+- **Mục tiêu**: Nghiệm thu đồng thời cả 5 môi trường, hoàn thiện tài liệu hướng dẫn bằng tiếng Việt, đảm bảo an toàn tuyệt đối thông tin bí mật và dự toán FinOps an toàn.
+- **Trạng thái**: 🟡 **Đang tiến hành bàn giao**

@@ -1,68 +1,64 @@
-# Known Issues & Environmental Blockers: DevSpeak AI
+# Danh Sách Sự Cố Đã Ghi Nhận (Known Issues): DevSpeak AI
 
-This document tracks known defects, technical debt, environmental blockers, and workarounds.
-
----
-
-## Active Issues
-
-### 1. Docker / WSL Not Available on Host
-- **Severity**: Low (MVP can use SQLite and local Node.js process)
-- **Component**: Container & Platform Infrastructure
-- **Description**: Docker Desktop and WSL are not installed on the host. Local containerization and local Kubernetes (KIND/k3d) will be deferred until Milestone 2/4 or when container virtualization is configured.
-- **Workaround**:
-  - Milestone 1 MVP is designed to run directly on the host using native processes and SQLite fallback (`aiosqlite`), with zero dependency on Docker.
-- **Status**: Documented / Open.
-
-### 2. PowerShell Subshell PATH Refresh
-- **Severity**: Low
-- **Component**: Developer Shell
-- **Description**: Newly installed tools in Program Files (`Git`, `node`, `gh`, `python`) may not be immediately visible in non-interactive agent PowerShell child sessions unless refreshed from registry.
-- **Workaround**: Commands needing these tools should refresh `$env:Path` or invoke via absolute path:
-  ```powershell
-  $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-  ```
-- **Status**: Workaround verified.
-
-### 3. SQLite Concurrency & File-Locking Scope
-- **Severity**: Low (Applicable only to local single-user development)
-- **Component**: Database Persistence
-- **Description**: SQLite locks the database file during write transactions. If multiple uvicorn worker processes attempt simultaneous writes, SQLite can raise database locked warnings.
-- **Mitigation / Production Path**:
-  - For local development, single-process async uvicorn is used with connection pooling (`check_same_thread=False`).
-  - Production deployments will switch `DATABASE_URL` to PostgreSQL (`postgresql+asyncpg://...`), providing row-level locking, connection pooling, and multi-tenant scaling.
-- **Status**: Architecturally managed.
-
-### 4. Consumer Gemini Advanced ($20/mo) vs Google AI Studio API Token
-- **Severity**: Informational / Operational Awareness
-- **Component**: AI Provider Integration
-- **Description**: Users often assume a consumer Google One AI Premium ($20/month) subscription provides programmatic API tokens for external apps. However, programmatic API calls require a developer API key generated via **Google AI Studio** (`aistudio.google.com`).
-- **Mitigation**:
-  - DevSpeak AI documents this distinction in `docs/OPERATIONS.md`.
-  - Default mode remains `AI_PROVIDER=mock`, allowing full offline zero-cost usage.
-  - If `AI_PROVIDER=gemini` is selected without a key, the backend returns a clear HTTP 503 `AIConfigurationError` instead of crashing.
-- **Status**: Documented & managed.
+Tài liệu này theo dõi toàn bộ các lỗi kỹ thuật, nợ công nghệ (technical debt), rào cản môi trường và các giải pháp khắc phục tạm thời (workarounds) của dự án DevSpeak AI.
 
 ---
 
-## Resolved Issues
+## 1. Các Vấn Đề Đang Được Theo Dõi (Active Operational Considerations)
 
-### 1. Host Machine Python Runtime Missing
-- **Resolution**: Python 3.12.10 installed successfully via `winget install --id Python.Python.3.12 --source winget`. Interpreter verified at `C:\Users\Nguyen\AppData\Local\Programs\Python\Python312\python.exe`.
-- **Date Resolved**: 2026-10-19.
+### 1.1 Khác Biệt Giữa Gói Gemini Cá Nhân ($20/tháng) và Google AI Studio Developer Key
+- **Mức độ nghiêm trọng**: Lưu ý vận hành (Informational)
+- **Thành phần**: Tích hợp AI Provider
+- **Mô tả**: Người dùng thường nhầm lẫn giữa gói tiêu dùng Google One AI Premium ($20/tháng sử dụng giao diện web gemini.google.com) và quyền truy cập API lập trình. Để ứng dụng gọi được mô hình Gemini, cần có API key lập trình được tạo từ **Google AI Studio** (`aistudio.google.com`).
+- **Giải pháp xử lý**:
+  - DevSpeak AI ghi rõ tài liệu hướng dẫn tạo key miễn phí (15 RPM) trong `docs/OPERATIONS.md`.
+  - Mặc định ứng dụng chạy ở chế độ `AI_PROVIDER=mock` với chi phí 0đ và độc lập ngoại tuyến.
+  - Nếu cấu hình `AI_PROVIDER=gemini` nhưng thiếu key, hệ thống trả về mã lỗi HTTP 503 `AIConfigurationError` rõ ràng thay vì làm sập ứng dụng.
+- **Trạng thái**: Đã tài liệu hóa và kiểm soát kiến trúc.
 
-### 2. Windows System Environment Variable `DEBUG=release` Clash
-- **Resolution**: Windows host had a pre-existing system variable `DEBUG=release`, which caused Pydantic Settings boolean parser to raise validation errors. Resolved by adding `parse_debug_value` validator in `Settings` to safely coerce strings like `release`, `prod`, `debug` into boolean values.
-- **Date Resolved**: 2026-10-19.
+### 1.2 Chi Phí Cloud Load Balancer Cho GKE (FinOps Consideration)
+- **Mức độ nghiêm trọng**: Thấp / FinOps (P1 FIN-01)
+- **Thành phần**: Ingress GKE Autopilot
+- **Mô tả**: External HTTP Load Balancer cấp phát địa chỉ IP công khai (`35.201.109.36`) cho cụm GKE tiêu tốn xấp xỉ ~$18.25/tháng phí quy tắc chuyển tiếp.
+- **Giải pháp xử lý**:
+  - Dự án cung cấp sẵn script `deploy/gitops/scripts/start-gke-tunnels.ps1` để chuyển đổi sang mô hình Port-Forward nội bộ an toàn (Web port 3002, API port 8002, Argo CD port 8080) với chi phí Ingress = $0 khi muốn tiết kiệm tối đa ngân sách Free Trial.
+- **Trạng thái**: Đã cung cấp giải pháp kép (Public Ingress và Port-Forward Tunnels).
 
-### 3. Bandit SAST B110 Empty Except Block in Config Parser
-- **Severity**: Low
-- **Component**: Backend Config (`apps/api/src/core/config.py`)
-- **Resolution**: Replaced `try: ... except Exception: pass` with explicit handling of `json.JSONDecodeError` returning cleaned origin list without an empty `pass` statement. Re-scanned with Bandit: 0 issues identified.
-- **Date Resolved**: 2026-10-19.
+---
 
-### 4. Next.js 15 App Router Prerender React Client Manifest Bug
-- **Severity**: Medium
-- **Component**: Frontend Build (`apps/web/src/app/page.tsx`)
-- **Resolution**: Next.js 15 App Router threw `Could not find the module ... in the React Client Manifest` when building statically if `page.tsx` directly contained `"use client";` while running concurrently with `next dev`. Refactored `apps/web/src/app/page.tsx` as a standard Server Component wrapping `DevSpeakApp` (client component) within `LanguageProvider`. Verified `next build` passes cleanly generating 4/4 static pages.
-- **Date Resolved**: 2026-10-19.
+## 2. Các Vấn Đề Đã Được Khắc Phục Hoàn Toàn (Resolved Issues)
+
+### 2.1 Trùng Lặp Tiền Tố Đường Dẫn `/api/v1` Trên Môi Trường Kubernetes (P0 SEC-01)
+- **Mức độ**: Nghiêm trọng (P0)
+- **Thành phần**: `apps/web/src/lib/api.ts`, `apps/web/src/app/layout.tsx`
+- **Nguyên nhân**: Khi `NEXT_PUBLIC_API_URL` được cấu hình dạng `http://localhost/api/v1` hoặc URL có chứa `/api/v1`, hàm gọi API tại frontend ghép thêm `/api/v1/questions` tạo thành đường dẫn trùng lặp `/api/v1/api/v1/questions`, dẫn tới lỗi HTTP 404 Not Found trên local kind và GKE.
+- **Giải pháp**: Xây dựng hàm chuẩn hóa `normalizeApiBaseUrl()` và `buildApiUrl()` tự động bóc tách tiền tố dư thừa; cập nhật Helm values cho local-kind và GKE sang chuẩn base domain (`http://localhost` và `http://35.201.109.36`). Kiểm thử tự động Vitest 58/58 passed, triển khai Cổng A lên kind Revision 2 trả về HTTP 200 OK và 26 câu hỏi.
+- **Ngày khắc phục**: 2026-10-25.
+
+### 2.2 Ràng Buộc Workload Identity Federation Quá Rộng Trên Production (P0 SEC-02)
+- **Mức độ**: Nghiêm trọng (P0)
+- **Thành phần**: `infra/terraform/environments/prod/main.tf`
+- **Nguyên nhân**: Quyền `roles/iam.workloadIdentityUser` được gán cho toàn bộ repository (`attribute.repository/nguyenlpn2015/DevSpeak-AI`), cho phép bất kỳ nhánh thử nghiệm hoặc Pull Request nào cũng có thể giả lập quyền deployer production.
+- **Giải pháp**: Sửa mã nguồn Terraform thu hẹp thành `subject/repo:nguyenlpn2015/DevSpeak-AI:ref:refs/heads/main`. Áp dụng thành công qua Terraform và `gcloud iam service-accounts remove-iam-policy-binding` để xóa hoàn toàn binding cũ.
+- **Ngày khắc phục**: 2026-10-25.
+
+### 2.3 Đường Dẫn Tuyệt Đối Cố Định Trong Các Script Vận Hành (P2 OPS-01)
+- **Mức độ**: Trung bình (P2)
+- **Thành phần**: `deploy/gitops/scripts/*.ps1` (5 scripts)
+- **Nguyên nhân**: Script chứa đường dẫn cố định `C:\Users\Nguyen\AppData\Local\Programs\...` khiến script không chạy được trên máy của kỹ sư khác.
+- **Giải pháp**: Tái cấu trúc cả 5 script sử dụng hàm phân giải đường dẫn động dựa trên `$PSScriptRoot` và kiểm tra lệnh có sẵn trên PATH (`Get-Command`).
+- **Ngày khắc phục**: 2026-10-25.
+
+### 2.4 Xung Đột Biến Môi Trường Hệ Thống Windows `DEBUG=release`
+- **Mức độ**: Thấp
+- **Thành phần**: Backend Settings (`apps/api/src/core/config.py`)
+- **Nguyên nhân**: Biến môi trường hệ thống Windows định sẵn `DEBUG=release` gây lỗi chuyển đổi kiểu boolean trong Pydantic Settings.
+- **Giải pháp**: Bổ sung hàm validator `parse_debug_value` tự động ép kiểu an toàn cho các chuỗi `release`, `prod`, `debug`.
+- **Ngày khắc phục**: 2026-10-19.
+
+### 2.5 Cảnh Báo Bandit SAST B110 Về Khối `except` Rỗng
+- **Mức độ**: Thấp
+- **Thành phần**: `apps/api/src/core/config.py`
+- **Nguyên nhân**: Sử dụng `try: ... except Exception: pass` trong hàm phân tích danh sách origin CORS.
+- **Giải pháp**: Thay thế bằng việc bắt lỗi chính xác `json.JSONDecodeError` và trả về danh sách origin chuẩn, loại bỏ hoàn toàn câu lệnh `pass`. Bandit quét lại đạt 0 cảnh báo.
+- **Ngày khắc phục**: 2026-10-19.

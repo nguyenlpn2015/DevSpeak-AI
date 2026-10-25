@@ -1,33 +1,36 @@
-# Operations & Local Setup Guide: DevSpeak AI
+# Sổ Tay Vận Hành & Thiết Lập Môi Trường (Operations Guide): DevSpeak AI
 
-This document provides step-by-step instructions for running, testing, and operating DevSpeak AI locally and in automated environments.
+Tài liệu này cung cấp hướng dẫn chi tiết từng bước để khởi chạy, kiểm thử, vận hành và khắc phục sự cố hệ thống DevSpeak AI trên môi trường cục bộ (Local) và các môi trường đám mây (GCP).
 
 ---
 
-## 1. Prerequisites & Environment Detection
+## 1. Yêu Cầu Tiền Đề & Nền Tảng Kỹ Thuật
 
-The host system has been audited and configured with the following verified baseline:
+Môi trường máy phát triển được cấu hình và kiểm định theo đường cơ sở sau:
 
-| Tool | Status on Host | Version Detected | Location / Notes |
+| Công cụ | Trạng thái | Phiên bản | Đường dẫn / Ghi chú |
 | :--- | :--- | :--- | :--- |
-| **Python** | Installed | `3.12.10` | `C:\Users\Nguyen\AppData\Local\Programs\Python\Python312\python.exe` |
-| **Git** | Installed | `2.55.0.windows.5` | `C:\Program Files\Git\cmd\git.exe` |
-| **Node.js** | Installed | `v24.20.0` | `C:\Program Files\nodejs\node.exe` |
-| **npm** | Installed | `11.19.0` | `C:\Program Files\nodejs\npm.cmd` |
-| **GitHub CLI** | Installed | `2.102.0` | `C:\Program Files\GitHub CLI\gh.exe` |
-| **Docker** | Missing | Not installed | Deferred to Milestone 2/4; MVP runs natively |
+| **Python** | Đã cài đặt | `3.12.10+` | Quản lý môi trường qua virtualenv (`apps/api/.venv`) |
+| **Node.js** | Đã cài đặt | `v24.20.0+` | Runtime cho Next.js 15 PWA |
+| **npm** | Đã cài đặt | `11.19.0+` | Quản lý dependencies frontend |
+| **Git** | Đã cài đặt | `2.55.0+` | Quản lý mã nguồn phân tán |
+| **Docker** | Đã cài đặt | `28.0.0+` | Chạy Docker Compose và build container images |
+| **Kubernetes (kind)** | Đã cài đặt | `0.27.0+` | Cụm Kubernetes cục bộ `devspeak-local` |
+| **Helm** | Đã cài đặt | `v3.17.0+` | Đóng gói và phát hành ứng dụng Kubernetes |
+| **Google Cloud SDK**| Đã cài đặt | `511.0.0+` | Quản trị tài nguyên GCP và xác thực bảo mật |
+| **Terraform** | Đã cài đặt | `1.10.0+` | Khởi tạo hạ tầng dưới dạng mã (IaC) |
 
 > [!NOTE]
-> On Windows, if commands like `python`, `git`, or `node` fail to resolve in a newly opened PowerShell shell, refresh your session PATH:
+> Trên hệ điều hành Windows, nếu các lệnh như `python`, `git`, hoặc `node` không nhận diện được trong phiên PowerShell mới mở, hãy làm mới PATH bằng lệnh:
 > ```powershell
 > $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 > ```
 
 ---
 
-## 2. Local Setup Steps
+## 2. Hướng Dẫn Khởi Chạy Local Native (Không Dùng Container)
 
-### 2.1 Backend (`apps/api`)
+### 2.1 Khởi chạy Backend (`apps/api`)
 ```powershell
 cd apps/api
 python -m venv .venv
@@ -37,246 +40,189 @@ pip install -r requirements-dev.txt
 cp .env.example .env
 ```
 
-### 2.2 Database Initialization & Migrations (Alembic)
-The local development database defaults to zero-cost, zero-configuration SQLite.
-To apply schema migrations:
+### 2.2 Khởi tạo Database & Chạy Migration (Alembic)
+Môi trường phát triển cục bộ mặc định sử dụng SQLite độc lập, chi phí bằng 0.
 ```powershell
 cd apps/api
 .\.venv\Scripts\Activate.ps1
-# Run all pending migrations to head
+# Chạy tất cả migration lên phiên bản mới nhất
 python -m alembic upgrade head
 
-# To revert the most recent migration (if needed):
+# Quay lui 1 bước migration nếu cần:
 python -m alembic downgrade -1
 ```
 
-### 2.3 Running Backend Server Locally
+### 2.3 Chạy Backend Server
 ```powershell
 cd apps/api
 .\.venv\Scripts\Activate.ps1
 python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
 ```
-API Documentation will be interactively available at:
+Tài liệu API tương tác khả dụng tại:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - ReDoc: `http://127.0.0.1:8000/redoc`
 
-### 2.4 Frontend (`apps/web`)
+### 2.4 Khởi chạy Frontend (`apps/web`)
 ```powershell
 cd apps/web
 npm install
 cp .env.example .env.local
-```
-
-### 2.5 Running Frontend Server Locally
-```powershell
-cd apps/web
 npm run dev
 ```
-The web application is accessible at: `http://localhost:3001`
+Giao diện ứng dụng truy cập tại: `http://localhost:3001`
 
 ---
 
-## 3. Database Configuration & Backup Strategy
+## 3. Khởi Chạy Bằng Docker Compose (Track A - Local)
 
-### 3.1 Database Drivers & Configurations
-- **Local Development (Default)**:
-  ```ini
-  DATABASE_URL=sqlite+aiosqlite:///./devspeak.db
-  DATABASE_ECHO=false
-  ```
-  Zero-cost, standalone, file-backed SQLite requiring no external database daemons or cloud accounts.
-- **Production (Intended PostgreSQL)**:
-  ```ini
-  DATABASE_URL=postgresql+asyncpg://devspeak_user:<SECURE_PASSWORD>@db-host:5432/devspeak
-  DATABASE_ECHO=false
-  ```
-  Compatible with PostgreSQL 15+ using high-performance `asyncpg` async driver.
+Docker Compose cung cấp toàn bộ ngăn xếp gồm Frontend, FastAPI Backend và PostgreSQL 16 containerized:
 
-### 3.2 SQLite Backup and Recovery (Local Development)
-Because SQLite runs in Write-Ahead Logging (WAL) or standard journal mode, use safe online backup commands to avoid copying mid-transaction corrupted blocks:
+```powershell
+# 1. Khởi chạy toàn bộ hệ thống ở chế độ nền
+docker compose up -d --build
 
-- **Create a clean backup**:
-  ```powershell
-  # Using Python sqlite3 standard library (no sqlite3.exe binary required)
-  python -c "import sqlite3; src = sqlite3.connect('devspeak.db'); bck = sqlite3.connect('devspeak_backup.db'); src.backup(bck); bck.close(); src.close(); print('Backup complete.')"
-  ```
-- **Restore from backup**:
-  ```powershell
-  Copy-Item -Path devspeak_backup.db -Destination devspeak.db -Force
-  ```
-- **Data Safety**:
-  All `*.db`, `*.sqlite`, `*-wal`, and `*-shm` files are strictly excluded in `.gitignore` to prevent committing candidate practice transcripts or sensitive interview responses into version control.
+# 2. Kiểm tra trạng thái và healthcheck của các container
+docker compose ps
 
----
+# 3. Xem log thời gian thực
+docker compose logs -f api
+docker compose logs -f web
 
-## 4. Running in Deterministic Mock AI Mode (0-Cost & Offline)
+# 4. Điểm truy cập:
+# Frontend Web: http://localhost:3001
+# Backend API:  http://localhost:8000
+# Health check: http://localhost:8000/readyz
+# Swagger Docs: http://localhost:8000/docs
 
-DevSpeak AI is specifically engineered to run with zero external API dependencies or costs during local development and CI testing:
+# 5. Dừng các container (giữ nguyên dữ liệu database)
+docker compose down
 
-In `apps/api/.env`:
-```ini
-ENVIRONMENT=development
-AI_PROVIDER=mock
-PORT=8000
+# 6. Dừng container và xóa volume dữ liệu
+docker compose down -v
 ```
 
-When `AI_PROVIDER=mock`:
-- All interview questions use deterministic evaluation algorithms and rubric heuristics.
-- No network requests are made to OpenAI, Anthropic, or Google.
-- All automated tests (`pytest`, `vitest`) pass reliably in seconds.
-- The web UI clearly indicates heuristic mock mode to candidates.
+---
+
+## 4. Khởi Chạy Kubernetes Local Với kind & Helm (Track B - Local)
+
+DevSpeak AI cung cấp bộ script tự động hóa khởi tạo cụm kind, cài đặt NGINX Ingress Controller, nạp Docker image và triển khai Helm chart:
+
+```powershell
+# 1. Khởi tạo cụm kind và triển khai toàn bộ ứng dụng
+.\deploy\gitops\scripts\setup-local.ps1
+
+# 2. Kiểm tra trạng thái pods và ingress trong cụm
+kubectl get pods -n devspeak-local
+kubectl get ingress -n devspeak-local
+
+# 3. Điểm truy cập dịch vụ:
+# Web Frontend:        http://localhost/
+# REST API Endpoint:   http://localhost/api/v1/questions
+# Health Readiness:    http://localhost/readyz
+
+# 4. Dọn dẹp và hủy cụm kind khi không sử dụng
+.\deploy\gitops\scripts\teardown-local.ps1
+```
 
 ---
 
-## 4.2 Configuring & Running Live AI Mode (Google Gemini)
+## 5. Vận Hành Cụm GKE Autopilot & Argo CD (Track B - Production)
 
-To evaluate candidate interview responses with real generative AI, DevSpeak AI integrates **Google Gemini 2.0 Flash** via the `GeminiAIProvider` adapter.
+Hệ thống GitOps trên Google Kubernetes Engine (GKE Autopilot) được tự động đồng bộ qua Argo CD:
 
-### Consumer Subscription ($20/mo) vs Developer API Key
-> [!IMPORTANT]
-> The consumer **Gemini Advanced ($20/month Google One AI Premium)** subscription provides web UI access at [gemini.google.com](https://gemini.google.com), but does **NOT** grant developer API tokens.
-> Programmatic API access requires an API key from **Google AI Studio** ([aistudio.google.com](https://aistudio.google.com)).
-> - **Free Tier**: Google AI Studio provides a free quota for `gemini-2.0-flash` (15 RPM, 1,500 requests/day) without requiring a credit card.
-> - **Pay-As-You-Go Tier**: If billed, `gemini-2.0-flash` charges ~$0.10 per 1M input tokens and ~$0.40 per 1M output tokens. A typical interview evaluation costs roughly **$0.000165** (over 6,000 evaluations per $1.00).
+### 5.1 Các lệnh kiểm tra trạng thái cụm
+```powershell
+# Lấy credentials kết nối GKE
+gcloud container clusters get-credentials devspeak-gke-portfolio --region asia-southeast1 --project project-12679df0-893b-4260-924
 
-### Step-by-Step Activation
-1. Navigate to [Google AI Studio](https://aistudio.google.com/) and sign in with your Google account.
-2. Click **"Get API key"** -> **"Create API key in new project"** and copy the secret key string.
-3. Open `apps/api/.env` (do NOT commit this file to Git):
+# Kiểm tra pods trong namespace sản xuất
+kubectl get pods -n devspeak-gke-portfolio -o wide
+
+# Kiểm tra ứng dụng Argo CD
+kubectl get applications -n argocd
+```
+
+### 5.2 Khởi tạo kết nối an toàn qua Port-Forward Tunnels
+Nếu không sử dụng Public Load Balancer để tiết kiệm chi phí, sử dụng script port-forward nền:
+```powershell
+# Mở tunnel an toàn cho Web (3002), API (8002) và Argo CD (8080)
+.\deploy\gitops\scripts\start-gke-tunnels.ps1
+
+# Hủy toàn bộ tài nguyên GKE khi kết thúc vòng đời dự án
+.\deploy\gitops\scripts\teardown-gke.ps1
+```
+
+---
+
+## 6. Chế Độ Đánh Giá AI: Mock Deterministic & Live Google Gemini
+
+### 6.1 Chế độ Mock Deterministic (0 Chi Phí, Bảo Mật Tuyệt Đối)
+Mặc định hệ thống chạy chế độ `AI_PROVIDER=mock`:
+- Sử dụng thuật toán heuristic nội bộ phân tích độ dài từ, số bước STAR và từ khóa kỹ thuật.
+- Hoàn toàn không gọi API ra ngoài, chi phí 0 đồng, bảo mật dữ liệu tuyệt đối.
+
+### 6.2 Kích hoạt Google Gemini 2.0 Flash
+Để kích hoạt trí tuệ nhân tạo tạo sinh thực tế:
+1. Truy cập [Google AI Studio](https://aistudio.google.com/) và tạo API key (miễn phí 15 RPM).
+2. Cấu hình biến môi trường trong file `.env` (chú ý: **KHÔNG** commit file này lên Git):
    ```ini
    ENVIRONMENT=development
    AI_PROVIDER=gemini
-   GEMINI_API_KEY=AIzaSy...YourActualSecretKeyHere...
+   GEMINI_API_KEY=AIzaSy...YourKey...
    GEMINI_MODEL=gemini-2.0-flash
    AI_TIMEOUT_SECONDS=25
    AI_MAX_RETRIES=2
    ```
-4. Start or restart the FastAPI backend:
-   ```powershell
-   cd apps/api
-   .\.venv\Scripts\python.exe -m uvicorn src.main:app --reload
-   ```
-5. Confirm provider readiness:
-   Query `GET http://127.0.0.1:8000/readyz`. The response will state `"ai_provider": "gemini"`.
-6. To return to zero-cost offline development at any time, simply reset `AI_PROVIDER=mock` in `apps/api/.env`.
+3. Khởi động lại backend API và kiểm tra `GET http://127.0.0.1:8000/readyz` hiển thị `"ai_provider": "gemini"`.
 
 ---
 
-## 5. Verification & Testing Commands
+## 7. Bộ Lệnh Kiểm Định & Chất Lượng (Verification Commands)
 
-### Backend Checks (`apps/api`)
-Run from `apps/api/` with virtual environment active:
-
-| Purpose | Exact Verified Command | Working Directory |
-| :--- | :--- | :--- |
-| Python Linting | `.\.venv\Scripts\ruff.exe check .` | `apps/api` |
-| Python Formatting Check | `.\.venv\Scripts\ruff.exe format --check .` | `apps/api` |
-| Full Automated Test Suite | `.\.venv\Scripts\python.exe -m pytest -v` | `apps/api` |
-| Unit Tests (Questions, Heuristics, Repository) | `.\.venv\Scripts\python.exe -m pytest tests/unit -v` | `apps/api` |
-| Integration Tests (API Endpoints, Migrations) | `.\.venv\Scripts\python.exe -m pytest tests/integration -v` | `apps/api` |
-| Alembic Migration Verification | `.\.venv\Scripts\python.exe -m pytest tests/integration/test_migrations.py -v` | `apps/api` |
-
-### Frontend Checks (`apps/web`)
-Run from `apps/web/`:
-
-| Purpose | Exact Verified Command | Working Directory |
-| :--- | :--- | :--- |
-| TypeScript Type-Check | `npm run type-check` | `apps/web` |
-| ESLint Linting | `npm run lint` | `apps/web` |
-| Vitest Unit & Component Tests | `npm test` | `apps/web` |
-| Next.js Production Build | `npm run build` | `apps/web` |
-
-### Repository Checks
-| Purpose | Exact Command | Working Directory |
-| :--- | :--- | :--- |
-| Git Status Inspection | `git status -s` | Project root |
-
----
-
-## 6. Endpoints Reference
-
-When the API service is running on `127.0.0.1:8000`:
-- **Health Check (Liveness)**: `GET http://127.0.0.1:8000/healthz`
-- **Readiness Check**: `GET http://127.0.0.1:8000/readyz`
-- **Question Catalog**: `GET http://127.0.0.1:8000/api/v1/questions`
-- **Question Detail**: `GET http://127.0.0.1:8000/api/v1/questions/k8s-pod-crashloopbackoff`
-- **Create Session**: `POST http://127.0.0.1:8000/api/v1/interviews/sessions`
-- **List Sessions**: `GET http://127.0.0.1:8000/api/v1/interviews/sessions?limit=20&offset=0`
-- **Get Session & Attempts**: `GET http://127.0.0.1:8000/api/v1/interviews/sessions/{session_id}`
-- **Submit Attempt against Session**: `POST http://127.0.0.1:8000/api/v1/interviews/sessions/{session_id}/attempts`
-- **Standalone Evaluation (Legacy)**: `POST http://127.0.0.1:8000/api/v1/interviews/evaluate`
-
----
-
-## 7. Security Scanning & DevSecOps Commands
-
-### Backend SAST & Audit Commands (`apps/api`)
+### 7.1 Kiểm định Backend (`apps/api`)
 ```powershell
 cd apps/api
-# Run Bandit SAST scan on backend source code
-.\.venv\Scripts\python.exe -m bandit -r src
+# Kiểm tra định dạng và phong cách mã nguồn
+.\.venv\Scripts\ruff.exe check .
+.\.venv\Scripts\ruff.exe format --check .
 
-# Run pip-audit vulnerability audit on declared dependencies
+# Quét lỗ hổng bảo mật SAST
+.\.venv\Scripts\python.exe -m bandit -r src
 .\.venv\Scripts\python.exe -m pip_audit -r requirements.txt
+
+# Chạy toàn bộ 70 bài kiểm thử tự động
+.\.venv\Scripts\python.exe -m pytest -v
 ```
 
-### Frontend Security Audit (`apps/web`)
+### 7.2 Kiểm định Frontend (`apps/web`)
 ```powershell
 cd apps/web
-# Run npm dependency vulnerability audit
-npm audit
-```
-
-### GitHub Actions CI Workflow Emulation
-To run full quality and security checks locally before pushing to remote:
-```powershell
-# 1. Backend checks
-cd apps/api
-.\.venv\Scripts\python.exe -m ruff check .
-.\.venv\Scripts\python.exe -m ruff format --check .
-.\.venv\Scripts\python.exe -m bandit -r src
-$env:AI_PROVIDER="mock"; .\.venv\Scripts\python.exe -m pytest -c pyproject.toml
-
-# 2. Frontend checks
-cd ../web
+# Kiểm tra kiểu dữ liệu TypeScript
 npm run type-check
+
+# Kiểm tra chất lượng mã nguồn ESLint
 npm run lint
+
+# Chạy toàn bộ 58 bài kiểm thử Vitest
 npm test
+
+# Kiểm tra đóng gói build sản phẩm
 npm run build
 ```
 
 ---
 
-## 8. Docker Compose Operations (Task 07)
+## 8. Hướng Dẫn Sao Lưu & Phục Hồi Cơ Sở Dữ Liệu
 
-When Docker Desktop or a container engine is available, the entire stack can be launched via Docker Compose:
-
-### 8.1 Starting the Multi-Container Stack
-```bash
-# 1. (Optional) Create local configuration from template
-cp .env.docker.example .env.docker
-
-# 2. Build and start all services in detached mode
-docker compose up -d --build
-
-# 3. View status of all services and healthchecks
-docker compose ps
-
-# 4. Follow application logs
-docker compose logs -f api
-docker compose logs -f web
+### 8.1 Sao lưu SQLite (Local Development)
+```powershell
+python -c "import sqlite3; src = sqlite3.connect('devspeak.db'); bck = sqlite3.connect('devspeak_backup.db'); src.backup(bck); bck.close(); src.close(); print('Backup complete.')"
 ```
 
-### 8.2 Service Endpoints in Docker
-- **Frontend Web UI**: `http://localhost:3001`
-- **Backend API Docs**: `http://localhost:8000/docs`
-- **Backend Healthcheck**: `http://localhost:8000/readyz`
-
-### 8.3 Stopping and Cleaning Up
-```bash
-# Stop containers while preserving database volume
-docker compose down
-
-# Stop containers and remove persistent database volume
-docker compose down -v
-```
+### 8.2 Sao lưu Cloud SQL PostgreSQL (GCP Production)
+- **Tự động hàng ngày**: Cloud SQL được cấu hình sao lưu tự động vào khung giờ cố định (`03:00 UTC`).
+- **Lưu trữ WAL & PITR**: Nhật ký giao dịch được giữ trong 7 ngày, cho phép khôi phục về bất kỳ giây nào trong 7 ngày qua.
+- **Tạo bản sao lưu tức thì (On-demand Backup)**:
+  ```powershell
+  gcloud sql backups create --instance=devspeak-db-ef9683a6 --description="Pre-maintenance backup" --project=project-12679df0-893b-4260-924
+  ```
