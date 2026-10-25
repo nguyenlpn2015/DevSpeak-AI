@@ -17,9 +17,11 @@ export interface Translations {
     questionBank: string;
     practiceStudio: string;
     connected: string;
+    connecting: string;
     offline: string;
     heuristicBadge: string;
     selectLanguage: string;
+    switchLanguageTitle: string;
     en: string;
     vi: string;
   };
@@ -224,11 +226,13 @@ export interface Translations {
     greetingSub: string;
     currentLevel: string;
     upperIntermediate: string;
+    quickTracksLabel: string;
     metrics: {
       dayStreak: string;
       totalXP: string;
       wordsLearned: string;
       level: string;
+      weekTag: string;
     };
     weeklyProgress: {
       title: string;
@@ -242,35 +246,52 @@ export interface Translations {
     };
     continueLearning: {
       heading: string;
+      startNow: string;
+      methodsCount: string;
       cardReview: {
         title: string;
         desc: string;
+        tag: string;
       };
       cardShadow: {
         title: string;
         desc: string;
+        tag: string;
       };
       cardAI: {
         title: string;
         desc: string;
+        tag: string;
       };
       cardExercises: {
         title: string;
         desc: string;
+        tag: string;
       };
     };
     todayGoals: {
       title: string;
+      subtitle: string;
+      completedBadge: string;
       goal1: string;
+      goal1Sub: string;
       goal2: string;
+      goal2Sub: string;
       goal3: string;
+      goal3Sub: string;
     };
     achievements: {
       title: string;
+      subtitle: string;
+      unlockedBadge: string;
       badge1: string;
+      badge1Desc: string;
       badge2: string;
+      badge2Desc: string;
       badge3: string;
+      badge3Desc: string;
       badge4: string;
+      badge4Desc: string;
     };
   };
   auth: {

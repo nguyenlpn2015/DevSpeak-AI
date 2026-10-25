@@ -26,7 +26,7 @@ export function LanguageSwitcher() {
             ? "bg-brand-600 text-white shadow-sm"
             : "text-slate-400 hover:text-slate-200"
         }`}
-        title="Switch to English"
+        title={language === "en" ? "English" : "Switch to English"}
       >
         EN
       </button>
@@ -40,7 +40,7 @@ export function LanguageSwitcher() {
             ? "bg-brand-600 text-white shadow-sm"
             : "text-slate-400 hover:text-slate-200"
         }`}
-        title="Chuyển sang Tiếng Việt"
+        title={language === "vi" ? "Tiếng Việt" : t.nav.switchLanguageTitle}
       >
         VI
       </button>

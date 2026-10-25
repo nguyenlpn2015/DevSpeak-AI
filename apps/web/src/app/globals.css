@@ -19,6 +19,11 @@ body {
 }
 
 /* Custom scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3B2A63 #080613;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -29,11 +34,38 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2D1E4E;
+  background: #3B2A63;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #8B20F5;
+}
+
+/* Dedicated highly-visible scrollbar for Studio Question List and Editor */
+.studio-custom-scrollbar {
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #8B20F5 #0D0920 !important;
+}
+
+.studio-custom-scrollbar::-webkit-scrollbar {
+  width: 6px !important;
+  display: block !important;
+}
+
+.studio-custom-scrollbar::-webkit-scrollbar-track {
+  background: #0D0920 !important;
+  border-radius: 9999px !important;
+}
+
+.studio-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #8B20F5 !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 8px rgba(139, 32, 245, 0.4) !important;
+}
+
+.studio-custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #A855F7 !important;
 }
 

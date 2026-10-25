@@ -44,6 +44,7 @@ export function DevSpeakApp() {
 
   const [report, setReport] = useState<FeedbackReport | null>(null);
   const [isBackendLive, setIsBackendLive] = useState<boolean>(false);
+  const [isCheckingHealth, setIsCheckingHealth] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressSummary | null>(null);
@@ -51,9 +52,14 @@ export function DevSpeakApp() {
 
   // Probe backend status
   const checkHealth = useCallback(async () => {
-    const status = await checkBackendStatus();
-    setIsBackendLive(status.isOnline);
-    return status.isOnline;
+    setIsCheckingHealth(true);
+    try {
+      const status = await checkBackendStatus(1);
+      setIsBackendLive(status.isOnline);
+      return status.isOnline;
+    } finally {
+      setIsCheckingHealth(false);
+    }
   }, []);
 
   // Fetch real progress analytics
@@ -329,10 +335,15 @@ export function DevSpeakApp() {
       />
 
       {/* Main Content Area: sits directly flush next to the sidebar with NO pl-64 */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#05040F]">
+      <div
+        className={`flex-1 flex flex-col min-w-0 bg-[#05040F] ${
+          activeTab === "practice" ? "h-screen max-h-screen overflow-hidden" : "min-h-screen"
+        }`}
+      >
         {/* Top Navigation Header */}
         <Header
           isBackendLive={isBackendLive}
+          isBackendChecking={isCheckingHealth}
           activeTab={activeTab}
           onTabChange={(tab) => {
             setActiveTab(tab);
@@ -346,8 +357,14 @@ export function DevSpeakApp() {
           onToggleMobileMenu={() => setMobileSidebarOpen((prev) => !prev)}
         />
 
-        {/* Viewport Content: Spans gracefully without orphan gaps */}
-        <main className="flex-1 w-full px-4 sm:px-6 xl:px-8 py-6">
+        {/* Viewport Content: Clean balanced container without orphan voids */}
+        <main
+          className={`w-full ${
+            activeTab === "practice"
+              ? "flex-1 min-h-0 overflow-hidden px-3 sm:px-4 xl:px-6 py-2.5"
+              : "flex-1 px-4 sm:px-6 xl:px-8 pt-4 pb-6"
+          }`}
+        >
           {/* Journey 1: LinguaFlow Flagship Dashboard */}
           {activeTab === "home" && (
             <LinguaFlowDashboard
@@ -439,19 +456,21 @@ export function DevSpeakApp() {
           )}
         </main>
 
-        {/* Sleek LinguaFlow Dark Footer */}
-        <footer className="border-t border-[#1F1538] bg-[#080613]/80 backdrop-blur-md py-6 text-center text-xs text-[#6B5E99] mt-auto">
-          <div className="w-full px-4 sm:px-6 xl:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[#9286C7]">{t.footer.copyright}</p>
-            <div className="flex items-center space-x-3 text-[11px]">
-              <span className="text-[#9286C7]">{t.footer.securityFirst}</span>
-              <span className="text-[#1F1538]">•</span>
-              <span className="text-[#9286C7]">{t.footer.zeroCost}</span>
-              <span className="text-[#1F1538]">•</span>
-              <span className="text-[#9286C7]">{t.footer.localOffline}</span>
+        {/* Sleek LinguaFlow Dark Footer (Hidden in immersive practice studio) */}
+        {activeTab !== "practice" && (
+          <footer className="border-t border-[#1F1538] bg-[#080613]/90 py-3.5 text-center text-xs text-[#6B5E99] mt-6">
+            <div className="w-full px-4 sm:px-6 xl:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-[#9286C7]">{t.footer.copyright}</p>
+              <div className="flex items-center space-x-3 text-[11px]">
+                <span className="text-[#9286C7]">{t.footer.securityFirst}</span>
+                <span className="text-[#1F1538]">•</span>
+                <span className="text-[#9286C7]">{t.footer.zeroCost}</span>
+                <span className="text-[#1F1538]">•</span>
+                <span className="text-[#9286C7]">{t.footer.localOffline}</span>
+              </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        )}
       </div>
     </div>
   );

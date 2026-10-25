@@ -25,12 +25,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const runtimeApiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const runtimeApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   return (
     <html lang="en" className="dark">
       <head>
-        {runtimeApiUrl ? (
+        {runtimeApiUrl !== undefined ? (
           <script
             id="devspeak-runtime-config"
             dangerouslySetInnerHTML={{

@@ -22,6 +22,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface HeaderProps {
   isBackendLive: boolean;
+  isBackendChecking?: boolean;
   activeTab: "home" | "catalog" | "detail" | "practice" | "feedback" | "flashcards" | "star";
   onTabChange: (tab: "home" | "catalog" | "practice" | "flashcards" | "star") => void;
   hasActiveQuestion: boolean;
@@ -31,6 +32,7 @@ interface HeaderProps {
 
 export function Header({
   isBackendLive,
+  isBackendChecking = false,
   activeTab,
   onTabChange,
   hasActiveQuestion,
@@ -131,11 +133,15 @@ export function Header({
             title={
               isBackendLive
                 ? "FastAPI Backend is online & healthy"
+                : isBackendChecking
+                ? "Connecting to backend..."
                 : "Backend is disconnected. Click to re-probe."
             }
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border cursor-pointer transition-all ${
               isBackendLive
                 ? "bg-emerald-950/50 text-emerald-300 border-emerald-800/60 hover:bg-emerald-900/50 shadow-sm shadow-emerald-950/40"
+                : isBackendChecking
+                ? "bg-indigo-950/50 text-indigo-300 border-indigo-800/60 animate-pulse"
                 : "bg-amber-950/50 text-amber-300 border-amber-800/60 hover:bg-amber-900/50"
             }`}
           >
@@ -147,6 +153,14 @@ export function Header({
                 </span>
                 <span className="hidden md:inline">{t.nav.connected}</span>
                 <span className="md:hidden">API</span>
+              </>
+            ) : isBackendChecking ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                <span>{t.nav.connecting}</span>
               </>
             ) : (
               <>

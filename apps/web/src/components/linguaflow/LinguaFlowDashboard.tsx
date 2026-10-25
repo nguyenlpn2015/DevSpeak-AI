@@ -82,7 +82,7 @@ export function LinguaFlowDashboard({
   ];
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-300">
+    <div className="space-y-6 pb-2 animate-in fade-in duration-300">
       {/* Top Header Banner: Greeting + CEFR Level Progression Card */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Left: Greeting & Streak */}
@@ -159,7 +159,7 @@ export function LinguaFlowDashboard({
       <div className="p-3.5 rounded-2xl bg-[#0D0920] border border-[#1F1538] flex flex-wrap items-center justify-between gap-2 shadow-sm">
         <div className="flex items-center space-x-2 text-xs font-semibold text-[#9286C7] px-1">
           <Terminal className="w-4 h-4 text-[#8B20F5]" />
-          <span>Lối tắt chủ đề phỏng vấn:</span>
+          <span>{t.flowDashboard.quickTracksLabel}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

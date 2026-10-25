@@ -178,17 +178,26 @@ export function LinguaSidebar({
             </button>
           );
         })}
+
+        {/* Tip of the day Card attached directly below Exercises */}
+        <div className="p-3.5 rounded-2xl bg-[#120C26] border border-[#1F1538] space-y-1.5 mt-4">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-[#A855F7]">
+            <Lightbulb className="w-3.5 h-3.5 text-[#A855F7]" />
+            <span>{t.linguaSidebar.tipTitle}</span>
+          </div>
+          <p className="text-[11px] text-[#9286C7] leading-relaxed">
+            {t.linguaSidebar.tipContent}
+          </p>
+        </div>
       </div>
 
-      {/* Tip of the day Card */}
-      <div className="p-3.5 rounded-2xl bg-[#120C26] border border-[#1F1538] space-y-1.5 mt-auto">
-        <div className="flex items-center space-x-1.5 text-xs font-bold text-[#A855F7]">
-          <Lightbulb className="w-3.5 h-3.5 text-[#A855F7]" />
-          <span>{t.linguaSidebar.tipTitle}</span>
-        </div>
-        <p className="text-[11px] text-[#9286C7] leading-relaxed">
-          {t.linguaSidebar.tipContent}
-        </p>
+      {/* Sidebar Bottom Status Pill */}
+      <div className="pt-3 border-t border-[#1F1538]/60 flex items-center justify-between text-[10px] text-[#6B5E99] shrink-0">
+        <span className="flex items-center space-x-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Core Engine Live</span>
+        </span>
+        <span className="font-mono text-[#9286C7]">Track A + B</span>
       </div>
     </div>
   );

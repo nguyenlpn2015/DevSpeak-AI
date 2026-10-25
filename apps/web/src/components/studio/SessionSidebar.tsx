@@ -42,12 +42,12 @@ export function SessionSidebar({
   return (
     <aside
       aria-label={t.studio.questionsNav}
-      className={`relative flex flex-col bg-slate-900/90 border-r border-slate-800/80 transition-all duration-300 ease-in-out shrink-0 select-none ${
-        isCollapsed ? "w-16" : "w-72 lg:w-80"
+      className={`relative h-full max-h-full flex flex-col bg-slate-900/90 rounded-2xl border border-slate-800/80 shadow-xl overflow-hidden transition-all duration-300 ease-in-out shrink-0 select-none ${
+        isCollapsed ? "w-16" : "w-64 xl:w-72 2xl:w-80"
       }`}
     >
       {/* Top Header */}
-      <div className="p-4 border-b border-slate-800/80 flex items-center justify-between gap-2">
+      <div className="p-3.5 sm:p-4 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0">
         {!isCollapsed && (
           <div className="flex items-center space-x-2.5 overflow-hidden">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-brand-600 via-indigo-500 to-purple-500 flex items-center justify-center shrink-0 shadow-md shadow-brand-500/20">
@@ -93,7 +93,7 @@ export function SessionSidebar({
 
       {/* Progress Track */}
       {!isCollapsed && (
-        <div className="px-4 py-2.5 bg-slate-950/60 border-b border-slate-800/60 flex items-center justify-between text-[11px]">
+        <div className="px-3.5 sm:px-4 py-2 bg-slate-950/60 border-b border-slate-800/60 flex items-center justify-between text-[11px] shrink-0">
           <span className="text-slate-400 font-medium">
             {completedCount} / {totalQuestions || 6} {t.studio.questionStatus.completed}
           </span>
@@ -110,8 +110,13 @@ export function SessionSidebar({
         </div>
       )}
 
-      {/* Question List */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1.5 focus:outline-none">
+      {/* Question List with always visible dedicated scrollbar */}
+      <div
+        role="region"
+        aria-label={t.studio.questionsNav}
+        tabIndex={0}
+        className="flex-1 min-h-0 overflow-y-auto studio-custom-scrollbar p-2 pr-1.5 space-y-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-500/50"
+      >
         {questions.map((q, idx) => {
           const isCurrent = q.id === currentQuestionId;
           const isEvaluated = evaluatedQuestionIds.has(q.id);
@@ -125,10 +130,10 @@ export function SessionSidebar({
               className={`w-full text-left rounded-xl transition-all cursor-pointer flex items-center ${
                 isCollapsed
                   ? "p-2.5 justify-center"
-                  : "p-3 space-x-3"
+                  : "p-2.5 sm:p-3 space-x-2.5 sm:space-x-3"
               } ${
                 isCurrent
-                  ? "bg-brand-950/70 border border-brand-500/50 text-white shadow-lg shadow-brand-500/10 ring-1 ring-brand-500/30"
+                  ? "bg-brand-950/70 border border-brand-500/60 text-white shadow-lg shadow-brand-500/10 ring-1 ring-brand-500/40"
                   : isEvaluated
                   ? "bg-slate-950/60 border border-emerald-900/40 text-slate-300 hover:bg-slate-850 hover:text-white"
                   : "bg-slate-950/40 border border-slate-800/60 text-slate-400 hover:bg-slate-850 hover:text-slate-200"
@@ -138,7 +143,7 @@ export function SessionSidebar({
               <div
                 className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-mono font-bold ${
                   isCurrent
-                    ? "bg-brand-600 text-white"
+                    ? "bg-brand-600 text-white shadow-sm shadow-brand-500/30"
                     : isEvaluated
                     ? "bg-emerald-950 text-emerald-400 border border-emerald-800/60"
                     : "bg-slate-900 text-slate-400 border border-slate-800"
@@ -165,7 +170,7 @@ export function SessionSidebar({
                       {q.difficulty}
                     </span>
                   </div>
-                  <h3 className="text-xs font-medium text-slate-200 truncate leading-snug">
+                  <h3 className="text-xs font-medium text-slate-200 line-clamp-2 leading-snug break-words">
                     {q.title}
                   </h3>
                   <div className="flex items-center space-x-1.5 mt-1 text-[10px]">
@@ -194,7 +199,7 @@ export function SessionSidebar({
       </div>
 
       {/* Return to Catalog Action */}
-      <div className="p-3 border-t border-slate-800/80 bg-slate-950/60">
+      <div className="p-2.5 sm:p-3 border-t border-slate-800/80 bg-slate-950/60 shrink-0">
         <button
           type="button"
           onClick={onBackToCatalog}

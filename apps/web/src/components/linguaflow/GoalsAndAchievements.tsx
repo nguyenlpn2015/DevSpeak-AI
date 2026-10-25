@@ -23,7 +23,7 @@ export function GoalsAndAchievements() {
     {
       id: "goal1",
       title: t.flowDashboard.todayGoals.goal1,
-      subtitle: "340 / 500 XP đạt được",
+      subtitle: t.flowDashboard.todayGoals.goal1Sub,
       progress: 68,
       completed: false,
       icon: <Zap className="w-4 h-4 text-[#F59E0B]" />,
@@ -32,7 +32,7 @@ export function GoalsAndAchievements() {
     {
       id: "goal2",
       title: t.flowDashboard.todayGoals.goal2,
-      subtitle: "6 / 10 Thẻ đã ôn tập",
+      subtitle: t.flowDashboard.todayGoals.goal2Sub,
       progress: 60,
       completed: false,
       icon: <Layers className="w-4 h-4 text-[#A855F7]" />,
@@ -41,7 +41,7 @@ export function GoalsAndAchievements() {
     {
       id: "goal3",
       title: t.flowDashboard.todayGoals.goal3,
-      subtitle: "1 / 1 Phiên phỏng vấn hoàn thành",
+      subtitle: t.flowDashboard.todayGoals.goal3Sub,
       progress: 100,
       completed: true,
       icon: <Bot className="w-4 h-4 text-[#315BFF]" />,
@@ -53,7 +53,7 @@ export function GoalsAndAchievements() {
     {
       id: "b1",
       title: t.flowDashboard.achievements.badge1,
-      desc: "Phản xạ nhanh < 2 phút",
+      desc: t.flowDashboard.achievements.badge1Desc,
       icon: <Zap className="w-5 h-5 text-[#A855F7]" />,
       bg: "bg-[#8B20F5]/15 border-[#8B20F5]/30 group-hover:border-[#8B20F5]/60",
       status: "unlocked",
@@ -61,7 +61,7 @@ export function GoalsAndAchievements() {
     {
       id: "b2",
       title: t.flowDashboard.achievements.badge2,
-      desc: "12 Ngày duy trì liên tiếp",
+      desc: t.flowDashboard.achievements.badge2Desc,
       icon: <Crown className="w-5 h-5 text-[#315BFF]" />,
       bg: "bg-[#315BFF]/15 border-[#315BFF]/30 group-hover:border-[#315BFF]/60",
       status: "unlocked",
@@ -69,7 +69,7 @@ export function GoalsAndAchievements() {
     {
       id: "b3",
       title: t.flowDashboard.achievements.badge3,
-      desc: "Giải thích chuẩn SRE",
+      desc: t.flowDashboard.achievements.badge3Desc,
       icon: <ShieldCheck className="w-5 h-5 text-[#EC007A]" />,
       bg: "bg-[#EC007A]/15 border-[#EC007A]/30 group-hover:border-[#EC007A]/60",
       status: "unlocked",
@@ -77,7 +77,7 @@ export function GoalsAndAchievements() {
     {
       id: "b4",
       title: t.flowDashboard.achievements.badge4,
-      desc: "Thiết kế hệ thống chịu tải",
+      desc: t.flowDashboard.achievements.badge4Desc,
       icon: <Cpu className="w-5 h-5 text-[#009F83]" />,
       bg: "bg-[#009F83]/15 border-[#009F83]/30 group-hover:border-[#009F83]/60",
       status: "unlocked",
@@ -98,13 +98,13 @@ export function GoalsAndAchievements() {
                 {t.flowDashboard.todayGoals.title}
               </h3>
               <p className="text-[11px] text-[#9286C7]">
-                Tiến độ rèn luyện hôm nay
+                {t.flowDashboard.todayGoals.subtitle}
               </p>
             </div>
           </div>
 
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#160F2E] text-[#9286C7] border border-[#1F1538]">
-            2/3 Hoàn thành
+            {t.flowDashboard.todayGoals.completedBadge}
           </span>
         </div>
 
@@ -165,13 +165,13 @@ export function GoalsAndAchievements() {
                 {t.flowDashboard.achievements.title}
               </h3>
               <p className="text-[11px] text-[#9286C7]">
-                Huy hiệu kỹ năng đã mở khóa
+                {t.flowDashboard.achievements.subtitle}
               </p>
             </div>
           </div>
 
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#009F83]/15 text-[#009F83] border border-[#009F83]/30">
-            4/4 Đã mở khóa
+            {t.flowDashboard.achievements.unlockedBadge}
           </span>
         </div>
 

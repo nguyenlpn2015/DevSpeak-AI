@@ -29,7 +29,7 @@ export function ContinueLearningSection({
       id: "flashcards" as const,
       title: t.flowDashboard.continueLearning.cardReview.title,
       desc: t.flowDashboard.continueLearning.cardReview.desc,
-      tag: "12 Thẻ hôm nay",
+      tag: t.flowDashboard.continueLearning.cardReview.tag,
       icon: <Layers className="w-5 h-5 text-white" />,
       bgGradient: "from-[#8B20F5] to-[#6010B8]",
       shadow: "shadow-[#8B20F5]/25 hover:shadow-[#8B20F5]/50",
@@ -39,7 +39,7 @@ export function ContinueLearningSection({
       id: "shadowing" as const,
       title: t.flowDashboard.continueLearning.cardShadow.title,
       desc: t.flowDashboard.continueLearning.cardShadow.desc,
-      tag: "Luyện phát âm & Ngữ điệu",
+      tag: t.flowDashboard.continueLearning.cardShadow.tag,
       icon: <Mic className="w-5 h-5 text-white" />,
       bgGradient: "from-[#EC007A] to-[#B8005F]",
       shadow: "shadow-[#EC007A]/25 hover:shadow-[#EC007A]/50",
@@ -49,7 +49,7 @@ export function ContinueLearningSection({
       id: "studio" as const,
       title: t.flowDashboard.continueLearning.cardAI.title,
       desc: t.flowDashboard.continueLearning.cardAI.desc,
-      tag: "AI Coach 1-1 Thực chiến",
+      tag: t.flowDashboard.continueLearning.cardAI.tag,
       icon: <Bot className="w-5 h-5 text-white" />,
       bgGradient: "from-[#315BFF] to-[#1A3EC7]",
       shadow: "shadow-[#315BFF]/25 hover:shadow-[#315BFF]/50",
@@ -59,7 +59,7 @@ export function ContinueLearningSection({
       id: "exercises" as const,
       title: t.flowDashboard.continueLearning.cardExercises.title,
       desc: t.flowDashboard.continueLearning.cardExercises.desc,
-      tag: "STAR Framework",
+      tag: t.flowDashboard.continueLearning.cardExercises.tag,
       icon: <Code2 className="w-5 h-5 text-white" />,
       bgGradient: "from-[#009F83] to-[#00705C]",
       shadow: "shadow-[#009F83]/25 hover:shadow-[#009F83]/50",
@@ -73,7 +73,7 @@ export function ContinueLearningSection({
         <h2 className="text-lg font-bold text-white tracking-tight flex items-center space-x-2">
           <span>{t.flowDashboard.continueLearning.heading}</span>
           <span className="text-xs font-normal text-[#9286C7]">
-            (4 Phương pháp học tương tác)
+            {t.flowDashboard.continueLearning.methodsCount}
           </span>
         </h2>
       </div>
@@ -108,7 +108,7 @@ export function ContinueLearningSection({
 
             {/* Card Footer: Action Indicator */}
             <div className="flex items-center text-xs font-semibold text-white/95 pt-2 border-t border-white/15">
-              <span>Bắt đầu ngay</span>
+              <span>{t.flowDashboard.continueLearning.startNow}</span>
               <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1.5 transition-transform" />
             </div>
           </button>

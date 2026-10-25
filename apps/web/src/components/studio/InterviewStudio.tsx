@@ -170,7 +170,7 @@ export function InterviewStudio({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-10rem)] w-full gap-4">
+    <div className="flex flex-col lg:flex-row h-full w-full gap-3.5 min-h-0 overflow-hidden">
       {/* Toast Notification */}
       {toastMessage && (
         <div
@@ -184,7 +184,7 @@ export function InterviewStudio({
 
       {/* ZONE 1 (LEFT): Session Navigation (Collapsible on Desktop) */}
       {allQuestions.length > 0 && onSelectQuestion && (
-        <div className="hidden lg:block shrink-0">
+        <div className="hidden lg:block shrink-0 h-full min-h-0">
           <SessionSidebar
             questions={allQuestions}
             currentQuestionId={question.id}
@@ -205,12 +205,12 @@ export function InterviewStudio({
 
       {/* ZONE 2 (CENTER): Main Interview Experience */}
       <div
-        className={`flex-1 flex flex-col space-y-4 min-w-0 ${
+        className={`flex-1 flex flex-col space-y-2.5 min-w-0 h-full min-h-0 overflow-hidden ${
           mobileTab === "coach" ? "hidden lg:flex" : "flex"
         }`}
       >
         {/* Top Session Bar */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-950 border border-slate-800 shadow-xl flex flex-wrap items-center justify-between gap-3">
+        <div className="p-3 rounded-xl bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-950 border border-slate-800 shadow-lg flex flex-wrap items-center justify-between gap-2.5 shrink-0">
           <div className="flex items-center space-x-2">
             <button
               type="button"
@@ -239,7 +239,7 @@ export function InterviewStudio({
         </div>
 
         {/* Question Prompt Card */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-3 relative overflow-hidden">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-slate-800 shadow-md space-y-2 relative overflow-hidden shrink-0 max-h-36 sm:max-h-40 overflow-y-auto studio-custom-scrollbar">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400">
               {t.practice.studioBadge}
@@ -251,25 +251,25 @@ export function InterviewStudio({
             )}
           </div>
 
-          <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
+          <h1 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug">
             {question.title}
           </h1>
 
-          <div className="p-4 rounded-xl bg-slate-950/90 border border-slate-800/80 text-slate-100 text-sm sm:text-base leading-relaxed font-sans">
+          <div className="p-2.5 sm:p-3 rounded-lg bg-slate-950/90 border border-slate-800/80 text-slate-100 text-xs sm:text-[13px] leading-relaxed font-sans">
             &ldquo;{question.prompt}&rdquo;
           </div>
 
           {/* Competencies Badges */}
           {question.competencies && question.competencies.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[11px] text-slate-400 mr-1 flex items-center">
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              <span className="text-[10px] text-slate-400 mr-1 flex items-center">
                 <Layers className="w-3 h-3 mr-1 text-brand-400" />
                 Focus:
               </span>
               {question.competencies.map((comp, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-950 text-slate-300 border border-slate-800"
+                  className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-950 text-slate-300 border border-slate-800"
                 >
                   {comp}
                 </span>
@@ -279,14 +279,14 @@ export function InterviewStudio({
         </div>
 
         {/* Answer Editor Workspace */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-3 flex-1 flex flex-col">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-2 flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+              <h2 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-brand-400" />
                 {t.practice.answerLabel}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-[11px] text-slate-400">
                 Articulate clearly in English as if on an interview video call.
               </p>
             </div>
@@ -324,22 +324,21 @@ export function InterviewStudio({
             </div>
           </div>
 
-          {/* Text Area */}
-          <div className="relative flex-1 flex flex-col">
+          {/* Text Area with internal vertical scroll */}
+          <div className="relative flex-1 min-h-0 flex flex-col">
             <textarea
               ref={textareaRef}
-              rows={9}
               placeholder={t.practice.placeholder}
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isSubmitting}
               aria-label={t.practice.answerLabel}
-              className="w-full flex-1 p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-sans leading-relaxed resize-y min-h-[180px]"
+              className="w-full h-full p-3.5 pb-8 bg-slate-950 border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-sans leading-relaxed resize-none overflow-y-auto studio-custom-scrollbar"
             />
 
             {/* Character & Word Counter */}
-            <div className="absolute right-3 bottom-3 flex items-center space-x-2.5 text-[11px] bg-slate-900/90 px-2.5 py-1 rounded-md border border-slate-800/80 backdrop-blur-sm pointer-events-none">
+            <div className="absolute right-3 bottom-2 flex items-center space-x-2.5 text-[10px] bg-slate-900/90 px-2.5 py-1 rounded-md border border-slate-800/80 backdrop-blur-sm pointer-events-none z-10">
               <span className="text-slate-400">
                 {wordCount} {t.practice.wordCounter}
               </span>
@@ -361,7 +360,7 @@ export function InterviewStudio({
           {error && (
             <div
               role="alert"
-              className="flex items-center space-x-2 p-3 rounded-xl bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300"
+              className="flex items-center space-x-2 p-2.5 rounded-lg bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 shrink-0"
             >
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
               <span>{error}</span>
@@ -369,17 +368,17 @@ export function InterviewStudio({
           )}
 
           {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-1 shrink-0">
             <div className="flex items-center space-x-3 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={onShowModelAnswer}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 bg-slate-950 text-slate-300 hover:text-white text-xs font-semibold transition-all inline-flex items-center justify-center cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl border border-slate-700 hover:border-slate-600 bg-slate-950 text-slate-300 hover:text-white text-xs font-semibold transition-all inline-flex items-center justify-center cursor-pointer"
               >
                 <Eye className="w-4 h-4 mr-1.5 text-slate-400" />
                 {t.practice.studyModelBtn}
               </button>
-              <span className="hidden xl:inline-flex items-center text-[11px] text-slate-500">
+              <span className="hidden xl:inline-flex items-center text-[10px] text-slate-500">
                 <Command className="w-3 h-3 mr-1" />
                 {t.studio.shortcutHint}
               </span>
@@ -390,7 +389,7 @@ export function InterviewStudio({
                 type="button"
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold transition-all inline-flex items-center justify-center shadow-lg ${
+                className={`w-full sm:w-auto px-5 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center justify-center shadow-lg ${
                   canSubmit
                     ? "bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-brand-600/30 cursor-pointer"
                     : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50"
@@ -434,7 +433,7 @@ export function InterviewStudio({
 
       {/* ZONE 3 (RIGHT): Contextual Coaching Panel */}
       <div
-        className={`w-full lg:w-96 xl:w-[410px] shrink-0 flex flex-col space-y-3 ${
+        className={`w-full lg:w-80 xl:w-96 2xl:w-[410px] shrink-0 h-full min-h-0 flex flex-col space-y-2.5 overflow-hidden ${
           mobileTab === "editor" ? "hidden lg:flex" : "flex"
         }`}
       >
@@ -496,7 +495,12 @@ export function InterviewStudio({
         </div>
 
         {/* Coach Content Panel */}
-        <div className="flex-1 p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-y-auto">
+        <div
+          role="region"
+          aria-label="Coaching resources panel"
+          tabIndex={0}
+          className="flex-1 min-h-0 p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-y-auto studio-custom-scrollbar focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-500/50"
+        >
           {activeCoachTab === "feedback" && report && (
             <FeedbackPanel
               report={report}

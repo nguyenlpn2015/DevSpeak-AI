@@ -44,7 +44,7 @@ export function MetricCards({
       id: "words",
       value: wordsLearned,
       label: t.flowDashboard.metrics.wordsLearned,
-      tag: "+14 tuần này",
+      tag: t.flowDashboard.metrics.weekTag,
       icon: <BookOpen className="w-5 h-5 text-[#A855F7]" />,
       iconBg: "bg-gradient-to-br from-[#8B20F5]/25 to-[#7015D1]/10 text-[#A855F7] border-[#8B20F5]/30",
       borderColor: "hover:border-[#8B20F5]/50 hover:shadow-[#8B20F5]/10",

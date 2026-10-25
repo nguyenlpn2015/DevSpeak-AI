@@ -190,7 +190,7 @@ export function FeedbackPanel({
           >
             <Sparkles className="w-3 h-3" />
             <span>{t.feedback.tabTechnical}</span>
-            <span className="ml-1 text-[10px] opacity-80">({report.feedback.technical_feedback.length})</span>
+            <span className="ml-1 text-[10px] opacity-80">({report.feedback?.technical_feedback?.length || 0})</span>
           </button>
           <button
             type="button"
@@ -203,7 +203,7 @@ export function FeedbackPanel({
           >
             <Lightbulb className="w-3 h-3" />
             <span>{t.feedback.tabGrammar}</span>
-            <span className="ml-1 text-[10px] opacity-80">({report.feedback.grammar_feedback.length})</span>
+            <span className="ml-1 text-[10px] opacity-80">({report.feedback?.grammar_feedback?.length || 0})</span>
           </button>
           <button
             type="button"
@@ -216,7 +216,7 @@ export function FeedbackPanel({
           >
             <CheckCircle2 className="w-3 h-3" />
             <span>{t.feedback.tabStructure}</span>
-            <span className="ml-1 text-[10px] opacity-80">({report.feedback.clarity_structure_feedback.length})</span>
+            <span className="ml-1 text-[10px] opacity-80">({report.feedback?.clarity_structure_feedback?.length || 0})</span>
           </button>
         </div>
 

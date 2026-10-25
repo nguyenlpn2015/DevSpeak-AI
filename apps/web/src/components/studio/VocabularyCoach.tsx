@@ -143,7 +143,7 @@ export function VocabularyCoach({
       )}
 
       {/* Vocabulary Cards */}
-      <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1 focus:outline-none">
+      <div className="space-y-2.5">
         {keyConcepts.length === 0 ? (
           <p className="text-xs text-slate-500 italic py-4 text-center">
             {t.studio.vocabulary.emptyText}
